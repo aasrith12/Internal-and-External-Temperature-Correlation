@@ -1,0 +1,24 @@
+30C Thermocouple vs IdentiCool Sensor 1
+Aligned rows: 127
+Best model by R2: Ridge Regression (0.4342)
+                       R2    RMSE     MAE  Pearson_r
+Model                                               
+Linear Regression  0.4292  2.4421  1.8577     0.7026
+Ridge Regression   0.4342  2.4315  1.8504     0.7026
+Random Forest      0.3037  2.6974  2.2391     0.6555
+Gradient Boosting  0.1210  3.0305  2.5705     0.5704
+KNN Regression     0.2522  2.7953  2.2469     0.6482
+SVR                0.4222  2.4570  1.8958     0.6949
+
+37C Thermocouple vs IdentiCool Sensor 2
+Aligned rows: 126
+Best model by R2: SVR (0.6952)
+                       R2    RMSE     MAE  Pearson_r
+Model                                               
+Linear Regression  0.6892  2.2022  1.7180     0.8507
+Ridge Regression   0.6865  2.2115  1.7277     0.8507
+Random Forest      0.5804  2.5588  2.0394     0.7680
+Gradient Boosting  0.4296  2.9832  2.3882     0.6706
+KNN Regression     0.5921  2.5229  2.0769     0.7716
+SVR                0.6952  2.1807  1.7767     0.8649
+

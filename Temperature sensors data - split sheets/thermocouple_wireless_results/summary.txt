@@ -1,0 +1,24 @@
+30C Thermocouple vs Wireless Sensor 1
+Aligned rows: 128
+Best model by R2: Ridge Regression (0.0420)
+                       R2    RMSE     MAE  Pearson_r
+Model                                               
+Linear Regression  0.0387  4.9580  4.2277     0.3356
+Ridge Regression   0.0420  4.9494  4.2236     0.3356
+Random Forest     -0.3335  5.8394  4.9265     0.1245
+Gradient Boosting -0.7483  6.6862  5.5405    -0.0051
+KNN Regression    -0.1870  5.5093  4.5731     0.2412
+SVR                0.0096  5.0326  4.2469     0.3134
+
+37C Thermocouple vs Wireless Sensor 2
+Aligned rows: 126
+Best model by R2: SVR (0.4842)
+                       R2    RMSE     MAE  Pearson_r
+Model                                               
+Linear Regression  0.4415  4.0761  3.5798     0.6941
+Ridge Regression   0.4398  4.0820  3.5841     0.6941
+Random Forest      0.3235  4.4859  3.8561     0.5771
+Gradient Boosting  0.1087  5.1491  4.3075     0.4597
+KNN Regression     0.2885  4.6007  3.9950     0.5825
+SVR                0.4842  3.9171  3.3846     0.7214
+

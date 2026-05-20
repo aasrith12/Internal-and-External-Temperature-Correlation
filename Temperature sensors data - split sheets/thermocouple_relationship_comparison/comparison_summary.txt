@@ -1,0 +1,21 @@
+Thermocouple Relationship Reliability Comparison
+
+Ranking basis: higher R2 first, then higher Pearson r, then lower RMSE.
+
+30C
+- Thermocouple vs IdentiCool: best model Ridge Regression, R2=0.4342, Pearson r=0.7026, RMSE=2.4315 C, MAE=1.8504 C
+- Thermocouple vs Wireless: best model Ridge Regression, R2=0.0420, Pearson r=0.3356, RMSE=4.9494 C, MAE=4.2236 C
+Best/reliable choice: Thermocouple vs IdentiCool using Ridge Regression.
+
+37C
+- Thermocouple vs IdentiCool: best model SVR, R2=0.6952, Pearson r=0.8649, RMSE=2.1807 C, MAE=1.7767 C
+- Thermocouple vs Wireless: best model SVR, R2=0.4842, Pearson r=0.7214, RMSE=3.9171 C, MAE=3.3846 C
+Best/reliable choice: Thermocouple vs IdentiCool using SVR.
+
+Average of each relationship's best models across 30C and 37C
+                                R2  Pearson_r    RMSE     MAE
+Relationship                                                 
+Thermocouple vs IdentiCool  0.5647     0.7838  2.3061  1.8136
+Thermocouple vs Wireless    0.2631     0.5285  4.4332  3.8041
+
+Overall stronger relationship: Thermocouple vs IdentiCool.

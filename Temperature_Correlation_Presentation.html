@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Internal vs External Temperature Correlation — Results</title>
+<style>
+  :root{
+    --surface-1:#fcfcfb;
+    --page:#f9f9f7;
+    --text-primary:#0b0b0b;
+    --text-secondary:#52514e;
+    --muted:#898781;
+    --gridline:#e1e0d9;
+    --border:rgba(11,11,11,0.10);
+    --blue:#2a78d6;
+    --aqua:#1baf7a;
+    --yellow:#eda100;
+    --green:#008300;
+    --violet:#4a3aa7;
+    --red:#e34948;
+    --orange:#eb6834;
+    --good:#0ca30c;
+    --critical:#d03b3b;
+    --winbg:#eaf6ea;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--page);
+    color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  .deck{ position:relative; width:100%; height:100vh; overflow:hidden; }
+  .slide{
+    display:none;
+    position:absolute; inset:0;
+    padding:28px 60px 68px 60px;
+    flex-direction:column;
+    overflow:auto;
+  }
+  .slide.active{ display:flex; }
+  .kicker{
+    display:inline-block;
+    font-size:12.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:#fff; background:var(--blue);
+    padding:4px 12px; border-radius:20px; margin-bottom:10px; width:fit-content;
+  }
+  .kicker.aqua{background:var(--aqua);}
+  .kicker.yellow{background:var(--yellow);}
+  .kicker.violet{background:var(--violet);}
+  .kicker.good{background:var(--good);}
+  .kicker.critical{background:var(--critical);}
+  .kicker.orange{background:var(--orange);}
+  .kicker.muted{background:var(--muted);}
+  h1{ font-size:42px; margin:0 0 6px 0; letter-spacing:-0.01em; }
+  h2{ font-size:27px; margin:0 0 4px 0; letter-spacing:-0.01em; }
+  .subtitle{ font-size:16.5px; color:var(--text-secondary); margin:0 0 16px 0; max-width:1000px; }
+  .body{ flex:1; display:flex; flex-direction:column; gap:10px; min-height:0; }
+  .lead{ font-size:18px; color:var(--text-secondary); max-width:1000px; }
+  .verdict{
+    font-size:14.5px; font-weight:600; color:var(--text-primary);
+    background:var(--surface-1); border:1px solid var(--border); border-left:6px solid var(--good);
+    border-radius:10px; padding:9px 16px; max-width:1200px; flex:0 0 auto;
+  }
+  .verdict.warn{ border-left-color:var(--critical); }
+  .verdict.info{ border-left-color:var(--blue); font-weight:500; }
+
+  /* stat tiles */
+  .stat-row{ display:flex; gap:16px; flex-wrap:wrap; flex:0 0 auto; }
+  .stat-tile{
+    background:var(--surface-1); border:1px solid var(--border); border-radius:10px;
+    padding:14px 18px; min-width:160px; border-top:4px solid var(--blue);
+  }
+  .stat-tile.aqua{ border-top-color:var(--aqua); }
+  .stat-tile.yellow{ border-top-color:var(--yellow); }
+  .stat-tile.violet{ border-top-color:var(--violet); }
+  .stat-tile.good{ border-top-color:var(--good); }
+  .stat-tile.critical{ border-top-color:var(--critical); }
+  .stat-value{ font-size:30px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; }
+  .stat-label{ font-size:12.5px; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:.04em; }
+
+  /* image rows — flex-shrink safe so nothing overlaps siblings */
+  .img-row{ display:flex; gap:18px; align-items:stretch; flex:1; min-height:0; }
+  .img-col{ flex:1; display:flex; flex-direction:column; gap:6px; min-width:0; min-height:0; }
+  .img-col img{
+    flex:1 1 auto; min-height:0; width:100%; object-fit:contain; background:var(--surface-1);
+    border:1px solid var(--border); border-radius:8px;
+  }
+  .badge{
+    display:inline-flex; align-items:center; gap:6px; width:fit-content;
+    font-size:12.5px; font-weight:700; color:#fff; padding:3px 10px; border-radius:20px; flex:0 0 auto;
+  }
+  .badge.t30{ background:var(--blue); }
+  .badge.t37{ background:var(--aqua); }
+  .caption{ font-size:12.5px; color:var(--muted); flex:0 0 auto; }
+
+  /* generic table */
+  table{ border-collapse:collapse; width:100%; font-size:14px; flex:0 0 auto; }
+  th,td{ text-align:left; padding:7px 11px; border-bottom:1px solid var(--gridline); font-variant-numeric:tabular-nums; }
+  th{ color:var(--muted); text-transform:uppercase; font-size:11px; letter-spacing:.04em; font-weight:700; }
+  tr.section-row td{ font-weight:700; color:var(--text-primary); background:var(--surface-1); }
+  td.best{ color:var(--good); font-weight:700; }
+  td.weak{ color:var(--critical); font-weight:700; }
+
+  /* per-model result table (6 rows, winner highlighted) — split into two 3-row columns to save vertical space */
+  .model-table-wrap{ display:flex; gap:16px; flex:0 0 auto; }
+  .model-table{ flex:1; min-width:0; font-size:12.5px; }
+  .model-table th, .model-table td{ padding:5px 9px; }
+  .model-table tr.winner{ background:var(--winbg); }
+  .model-table tr.winner td{ font-weight:700; color:var(--good); }
+  .model-table td.neg{ color:var(--critical); font-weight:700; }
+
+  ul.clean{ margin:0; padding-left:22px; font-size:16.5px; color:var(--text-secondary); line-height:1.65; }
+  ul.clean li{ margin-bottom:4px; }
+  ul.clean li strong{ color:var(--text-primary); }
+  ol.clean{ margin:0; padding-left:22px; font-size:16.5px; color:var(--text-secondary); line-height:1.7; }
+  ol.clean li{ margin-bottom:6px; }
+  .cols2{ display:flex; gap:36px; flex:1; min-height:0; }
+  .cols2 > div{ flex:1; min-width:0; }
+
+  .appendix-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 40px; }
+  .appendix-grid h3{ font-size:15px; margin:0 0 4px 0; color:var(--blue); }
+  .appendix-grid p{ font-size:13.5px; color:var(--text-secondary); margin:0 0 10px 0; }
+
+  /* explainer cards (metrics / models) */
+  .explain-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; flex:1; min-height:0; }
+  .explain-card{
+    background:var(--surface-1); border:1px solid var(--border); border-radius:10px;
+    padding:16px 20px; border-top:4px solid var(--blue); display:flex; flex-direction:column; gap:6px; min-height:0;
+  }
+  .explain-card.aqua{ border-top-color:var(--aqua); }
+  .explain-card.yellow{ border-top-color:var(--yellow); }
+  .explain-card.violet{ border-top-color:var(--violet); }
+  .explain-card h3{ margin:0; font-size:18px; }
+  .explain-card p{ margin:0; font-size:14.5px; color:var(--text-secondary); line-height:1.5; }
+  .explain-card .rule{ font-size:12.5px; color:var(--muted); margin-top:auto; padding-top:8px; border-top:1px dashed var(--gridline); }
+
+  .model-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; flex:1; min-height:0; }
+  .model-card{ background:var(--surface-1); border:1px solid var(--border); border-radius:10px; padding:12px 15px; border-top:4px solid var(--violet); min-height:0; }
+  .model-card h4{ margin:0 0 5px 0; font-size:14.5px; }
+  .model-card p{ margin:0; font-size:12.8px; color:var(--text-secondary); line-height:1.42; }
+
+  /* nav chrome */
+  .progress{ position:fixed; left:0; bottom:0; height:4px; background:var(--blue); width:0%; transition:width .2s; z-index:20; }
+  .navbar{
+    position:fixed; right:24px; bottom:18px; display:flex; align-items:center; gap:10px;
+    background:rgba(252,252,251,0.94); border:1px solid var(--border); border-radius:30px; padding:7px 12px;
+    font-size:13px; color:var(--text-secondary); z-index:20; backdrop-filter:blur(4px);
+  }
+  .navbar button{
+    border:none; background:var(--text-primary); color:#fff; width:30px; height:30px; border-radius:50%;
+    cursor:pointer; font-size:15px; line-height:1;
+  }
+  .navbar button:hover{ background:var(--blue); }
+  .navbar .count{ min-width:52px; text-align:center; font-variant-numeric:tabular-nums; }
+  .navbar .fs{ border-radius:16px; width:auto; padding:0 12px; height:30px; font-size:12.5px; }
+  @media print{
+    .slide{ display:flex !important; position:relative; height:100vh; page-break-after:always; }
+    .navbar, .progress{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- 1 : TITLE -->
+  <section class="slide active">
+    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; max-width:1100px;">
+      <div class="kicker">Correlation Training — Results Review</div>
+      <h1 style="font-size:52px;">Internal vs External Temperature Sensor Correlation</h1>
+      <p class="subtitle" style="font-size:20px;">Can a non-invasive ambient sensor reliably stand in for a direct body-temperature probe?</p>
+      <div class="stat-row" style="margin-top:20px;">
+        <div class="stat-tile"><div class="stat-value">6</div><div class="stat-label">Sensor datasets</div></div>
+        <div class="stat-tile aqua"><div class="stat-value">6</div><div class="stat-label">ML models tested per case</div></div>
+        <div class="stat-tile yellow"><div class="stat-value">2</div><div class="stat-label">Temperature conditions</div></div>
+        <div class="stat-tile violet"><div class="stat-value">6</div><div class="stat-label">Analysis pipelines</div></div>
+      </div>
+      <p style="margin-top:34px; color:var(--muted); font-size:14px;">Prepared 2026-07-01</p>
+    </div>
+  </section>
+
+  <!-- 2 : AGENDA -->
+  <section class="slide">
+    <div class="kicker muted">Agenda</div>
+    <h2>What this presentation covers</h2>
+    <div class="body">
+      <ol class="clean">
+        <li>What we're measuring and why it matters</li>
+        <li>How to read the results — the metrics, explained simply</li>
+        <li>Why we test several different models instead of just one</li>
+        <li>Baseline check — do the sensors move together at all?</li>
+        <li>Thermocouple vs IdentiCool (internal reference)</li>
+        <li>Thermocouple vs Wireless (ambient air), same instant</li>
+        <li>Head-to-head verdict</li>
+        <li>The twist — accounting for a time delay</li>
+        <li>Sanity check with a real physics model</li>
+        <li>Full recap, recommendation, and next steps</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 3 : DOMAIN FRAMING -->
+  <section class="slide">
+    <div class="kicker muted">Setup</div>
+    <h2>What we're measuring, and why it matters</h2>
+    <div class="body">
+      <div class="explain-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="explain-card">
+          <h3>Thermocouple</h3>
+          <p>A direct core/body-temperature probe. This is the number we actually care about for the bird — our "ground truth."</p>
+          <div class="rule">The value every other sensor is being judged against.</div>
+        </div>
+        <div class="explain-card aqua">
+          <h3>IdentiCool</h3>
+          <p>An internal reference probe, placed differently from the thermocouple. Already fairly close to the animal.</p>
+          <div class="rule">Candidate #1 as a stand-in for the thermocouple.</div>
+        </div>
+        <div class="explain-card yellow">
+          <h3>Wireless sensor</h3>
+          <p>Ambient house/air temperature. Fully non-invasive and easy to deploy at scale, but physically once-removed from the bird.</p>
+          <div class="rule">Candidate #2 as a stand-in for the thermocouple.</div>
+        </div>
+      </div>
+      <div class="verdict info">If ambient air alone could reliably predict core body temperature, we could monitor bird welfare non-invasively and at scale, without a probe on or near the animal. That practical question is behind every chart in this deck.</div>
+    </div>
+  </section>
+
+  <!-- 4 : THE QUESTION -->
+  <section class="slide">
+    <div class="kicker muted">The question</div>
+    <h2>What we're actually answering</h2>
+    <div class="body" style="justify-content:center;">
+      <p class="lead" style="font-size:24px; color:var(--text-primary); font-weight:600; max-width:1050px;">"If we only had the IdentiCool reading, or only had the ambient wireless reading, how accurately could we estimate what the thermocouple would show — and is a time delay part of the story?"</p>
+      <ul class="clean" style="margin-top:10px;">
+        <li>Tested at <strong>two conditions</strong> — 30&deg;C and 37&deg;C — since the relationship might behave differently at each.</li>
+        <li>Tested with <strong>six different prediction methods</strong> per case, so the conclusion isn't an artifact of picking the wrong method.</li>
+        <li>Judged on <strong>the same four metrics</strong> every time, explained on the next slide.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5 : METRICS EXPLAINED -->
+  <section class="slide">
+    <div class="kicker muted">How to read the results</div>
+    <h2>The four numbers you'll see on every chart</h2>
+    <div class="body">
+      <div class="explain-grid">
+        <div class="explain-card">
+          <h3>R&sup2; (R-squared)</h3>
+          <p>Of all the up-and-down movement in the real thermocouple reading, what percentage does our prediction actually explain? 0% = no better than guessing the average every time. 100% = perfect.</p>
+          <div class="rule">This is our main scoreboard number. Above ~0.5 is a genuinely useful relationship for noisy biological data; near 0 (or negative) means the model isn't working.</div>
+        </div>
+        <div class="explain-card aqua">
+          <h3>Pearson r (correlation)</h3>
+          <p>How tightly the two sensors move together in a straight line, from &minus;1 (perfectly opposite) through 0 (no relationship) to +1 (perfectly together).</p>
+          <div class="rule">Easier to picture than R&sup2;, but on its own it doesn't say how big the error is in real degrees &mdash; we always look at it alongside RMSE.</div>
+        </div>
+        <div class="explain-card yellow">
+          <h3>RMSE (root mean squared error)</h3>
+          <p>The typical size of the mistake, in real &deg;C. If RMSE = 2&deg;C, the prediction is usually off by about 2 degrees. Lower is better.</p>
+          <div class="rule">Punishes occasional big misses more heavily than small, consistent ones.</div>
+        </div>
+        <div class="explain-card violet">
+          <h3>MAE (mean absolute error)</h3>
+          <p>Also the average mistake in &deg;C, but every error counts equally &mdash; a few large misses don't dominate the number.</p>
+          <div class="rule">RMSE and MAE close together = errors are fairly consistent; RMSE much higher than MAE = a few bad misses are dragging it up.</div>
+        </div>
+      </div>
+      <div class="verdict info">Ranking rule used throughout: highest R&sup2; first, then highest Pearson r, then lowest RMSE. One metric alone can be misleading, so we never pick a "winner" on a single number.</div>
+    </div>
+  </section>
+
+  <!-- 6 : WHY 6 MODELS -->
+  <section class="slide">
+    <div class="kicker muted">Method</div>
+    <h2>Why test six different prediction methods, not one?</h2>
+    <p class="subtitle">No single method is right for every relationship &mdash; some data behaves in a straight line, some bends. Testing all six and letting the numbers decide avoids baking in a bad assumption.</p>
+    <div class="body">
+      <div class="model-grid">
+        <div class="model-card"><h4>Linear Regression</h4><p>The simplest possible straight-line relationship between the two sensors.</p></div>
+        <div class="model-card"><h4>Ridge Regression</h4><p>Also a straight line, but adjusted so a few noisy/odd readings can't throw it off as easily.</p></div>
+        <div class="model-card"><h4>Random Forest</h4><p>Many simple decision rules voting together &mdash; good at catching bends and irregular patterns.</p></div>
+        <div class="model-card"><h4>Gradient Boosting</h4><p>Decision rules that learn from each other's mistakes step by step &mdash; often the most accurate, but can latch onto noise if the dataset is small.</p></div>
+        <div class="model-card"><h4>KNN (k-Nearest Neighbors)</h4><p>Predicts a new reading by looking at what happened during the most similar past readings.</p></div>
+        <div class="model-card"><h4>SVR (Support Vector Regression)</h4><p>Fits a flexible trend line that tolerates small errors while still respecting the overall pattern.</p></div>
+      </div>
+      <div class="verdict">On every results slide that follows, all six are shown side by side &mdash; the "winning" model is simply whichever one scored best on that specific data, not a method we favored going in.</div>
+    </div>
+  </section>
+
+  <!-- 7 : BASELINE -->
+  <section class="slide">
+    <div class="kicker">Step 1 &middot; Baseline</div>
+    <h2>Do the three sensors move together at all?</h2>
+    <p class="subtitle">Before isolating any one relationship: a first look at all three sensors aligned in time.</p>
+    <div class="body">
+      <div class="stat-row">
+        <div class="stat-tile"><span class="badge t30">30&deg;C</span><div class="stat-value" style="margin-top:8px;">R&sup2; 0.67</div><div class="stat-label">Best: Ridge Regression</div></div>
+        <div class="stat-tile aqua"><span class="badge t37">37&deg;C</span><div class="stat-value" style="margin-top:8px;">R&sup2; 0.72</div><div class="stat-label">Best: Linear Regression</div></div>
+      </div>
+      <div class="img-row">
+        <div class="img-col">
+          <span class="badge t30">30&deg;C</span>
+          <img src="Temperature sensors data - split sheets/correlation_model_results/30C_aligned_temperature_trends.png" alt="30C aligned trends">
+        </div>
+        <div class="img-col">
+          <span class="badge t37">37&deg;C</span>
+          <img src="Temperature sensors data - split sheets/correlation_model_results/37C_aligned_temperature_trends.png" alt="37C aligned trends">
+        </div>
+      </div>
+      <div class="verdict info">All three sensors clearly track the same overall trend &mdash; that confirms the data is usable and the sensors are recording real, related signals. It doesn't yet tell us which pairing is the most reliable; that's the next few slides.</div>
+    </div>
+  </section>
+
+  <!-- 8 : IDENTICOOL 30C -->
+  <section class="slide">
+    <div class="kicker aqua">Step 2 &middot; Thermocouple vs IdentiCool</div>
+    <h2><span class="badge t30" style="vertical-align:2px;">30&deg;C</span>&nbsp; Does the internal reference predict core temperature?</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col">
+          <img src="Temperature sensors data - split sheets/thermocouple_identicool_results/30C_thermocouple_identicool_model_results.png" alt="30C TC vs IdentiCool models">
+        </div>
+      </div>
+      <div class="model-table-wrap">
+        <table class="model-table">
+          <tr><th>Model</th><th>R&sup2;</th><th>Pearson r</th><th>RMSE</th><th>MAE</th></tr>
+          <tr><td>Linear Regression</td><td>0.429</td><td>0.703</td><td>2.44&deg;C</td><td>1.86&deg;C</td></tr>
+          <tr class="winner"><td>Ridge Regression</td><td>0.434</td><td>0.703</td><td>2.43&deg;C</td><td>1.85&deg;C</td></tr>
+          <tr><td>Random Forest</td><td>0.304</td><td>0.656</td><td>2.70&deg;C</td><td>2.24&deg;C</td></tr>
+        </table>
+        <table class="model-table">
+          <tr><th>Model</th><th>R&sup2;</th><th>Pearson r</th><th>RMSE</th><th>MAE</th></tr>
+          <tr><td>Gradient Boosting</td><td>0.121</td><td>0.570</td><td>3.03&deg;C</td><td>2.57&deg;C</td></tr>
+          <tr><td>KNN Regression</td><td>0.252</td><td>0.648</td><td>2.80&deg;C</td><td>2.25&deg;C</td></tr>
+          <tr><td>SVR</td><td>0.422</td><td>0.695</td><td>2.46&deg;C</td><td>1.90&deg;C</td></tr>
+        </table>
+      </div>
+      <div class="verdict">Ridge Regression wins on R&sup2; (0.434), closely followed by Linear and SVR &mdash; the three straight-line-style methods all agree closely. The tree-based methods (Random Forest, Gradient Boosting, KNN) score lower, likely overfitting this smaller 30&deg;C dataset.</div>
+    </div>
+  </section>
+
+  <!-- 9 : IDENTICOOL 37C -->
+  <section class="slide">
+    <div class="kicker aqua">Step 2 &middot; Thermocouple vs IdentiCool</div>
+    <h2><span class="badge t37" style="vertical-align:2px;">37&deg;C</span>&nbsp; Does the internal reference predict core temperature?</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col">
+          <img src="Temperature sensors data - split sheets/thermocouple_identicool_results/37C_thermocouple_identicool_model_results.png" alt="37C TC vs IdentiCool models">
+        </div>
+      </div>
+      <div class="model-table-wrap">
+        <table class="model-table">
+          <tr><th>Model</th><th>R&sup2;</th><th>Pearson r</th><th>RMSE</th><th>MAE</th></tr>
+          <tr><td>Linear Regression</td><td>0.689</td><td>0.851</td><td>2.20&deg;C</td><td>1.72&deg;C</td></tr>
+          <tr><td>Ridge Regression</td><td>0.687</td><td>0.851</td><td>2.21&deg;C</td><td>1.73&deg;C</td></tr>
+          <tr><td>Random Forest</td><td>0.580</td><td>0.768</td><td>2.56&deg;C</td><td>2.04&deg;C</td></tr>
+        </table>
+        <table class="model-table">
+          <tr><th>Model</th><th>R&sup2;</th><th>Pearson r</th><th>RMSE</th><th>MAE</th></tr>
+          <tr><td>Gradient Boosting</td><td>0.430</td><td>0.671</td><td>2.98&deg;C</td><td>2.39&deg;C</td></tr>
+          <tr><td>KNN Regression</td><td>0.592</td><td>0.772</td><td>2.52&deg;C</td><td>2.08&deg;C</td></tr>
+          <tr class="winner"><td>SVR</td><td>0.695</td><td>0.865</td><td>2.18&deg;C</td><td>1.78&deg;C</td></tr>
+        </table>
+      </div>
+      <div class="verdict">At 37&deg;C the relationship is noticeably stronger across the board. SVR takes the top spot (R&sup2; = 0.695), with Linear and Ridge close behind; Gradient Boosting is again the weakest performer.</div>
+    </div>
+  </section>
+
+  <!-- 10 : WIRELESS 30C -->
+  <section class="slide">
+    <div class="kicker yellow">Step 3 &middot; Thermocouple vs Wireless (same instant)</div>
+    <h2><span class="badge t30" style="vertical-align:2px;">30&deg;C</span>&nbsp; Does ambient air, at the same moment, predict core temperature?</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col">
+          <img src="Temperature sensors data - split sheets/thermocouple_wireless_results/30C_thermocouple_wireless_model_results.png" alt="30C TC vs Wireless models">
+        </div>
+      </div>
+      <div class="model-table-wrap">
+        <table class="model-table">
+          <tr><th>Model</th><th>R&sup2;</th><th>Pearson r</th><th>RMSE</th><th>MAE</th></tr>
+          <tr><td>Linear Regression</td><td>0.039</td><td>0.336</td><td>4.96&deg;C</td><td>4.23&deg;C</td></tr>
+          <tr class="winner"><td>Ridge Regression</td><td>0.042</td><td>0.336</td><td>4.95&deg;C</td><td>4.22&deg;C</td></tr>
+          <tr><td>Random Forest</td><td class="neg">&minus;0.334</td><td>0.125</td><td>5.84&deg;C</td><td>4.93&deg;C</td></tr>
+        </table>
+        <table class="model-table">
+          <tr><th>Model</th><th>R&sup2;</th><th>Pearson r</th><th>RMSE</th><th>MAE</th></tr>
+          <tr><td>Gradient Boosting</td><td class="neg">&minus;0.748</td><td>&minus;0.005</td><td>6.69&deg;C</td><td>5.54&deg;C</td></tr>
+          <tr><td>KNN Regression</td><td class="neg">&minus;0.187</td><td>0.241</td><td>5.51&deg;C</td><td>4.57&deg;C</td></tr>
+          <tr><td>SVR</td><td>0.010</td><td>0.313</td><td>5.03&deg;C</td><td>4.25&deg;C</td></tr>
+        </table>
+      </div>
+      <div class="verdict warn">Not one model finds a usable relationship. Even the best (Ridge, R&sup2; = 0.04) explains almost none of the variation, and three models score <em>below zero</em> &mdash; worse than simply predicting the average every time. At this exact instant, ambient air temperature does not predict core temperature at 30&deg;C.</div>
+    </div>
+  </section>
+
+  <!-- 11 : WIRELESS 37C -->
+  <section class="slide">
+    <div class="kicker yellow">Step 3 &middot; Thermocouple vs Wireless (same instant)</div>
+    <h2><span class="badge t37" style="vertical-align:2px;">37&deg;C</span>&nbsp; Does ambient air, at the same moment, predict core temperature?</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col">
+          <img src="Temperature sensors data - split sheets/thermocouple_wireless_results/37C_thermocouple_wireless_model_results.png" alt="37C TC vs Wireless models">
+        </div>
+      </div>
+      <div class="model-table-wrap">
+        <table class="model-table">
+          <tr><th>Model</th><th>R&sup2;</th><th>Pearson r</th><th>RMSE</th><th>MAE</th></tr>
+          <tr><td>Linear Regression</td><td>0.442</td><td>0.694</td><td>4.08&deg;C</td><td>3.58&deg;C</td></tr>
+          <tr><td>Ridge Regression</td><td>0.440</td><td>0.694</td><td>4.08&deg;C</td><td>3.58&deg;C</td></tr>
+          <tr><td>Random Forest</td><td>0.324</td><td>0.577</td><td>4.49&deg;C</td><td>3.86&deg;C</td></tr>
+        </table>
+        <table class="model-table">
+          <tr><th>Model</th><th>R&sup2;</th><th>Pearson r</th><th>RMSE</th><th>MAE</th></tr>
+          <tr><td>Gradient Boosting</td><td>0.109</td><td>0.460</td><td>5.15&deg;C</td><td>4.31&deg;C</td></tr>
+          <tr><td>KNN Regression</td><td>0.289</td><td>0.583</td><td>4.60&deg;C</td><td>4.00&deg;C</td></tr>
+          <tr class="winner"><td>SVR</td><td>0.484</td><td>0.721</td><td>3.92&deg;C</td><td>3.38&deg;C</td></tr>
+        </table>
+      </div>
+      <div class="verdict warn">Better than 30&deg;C, but still clearly weaker than IdentiCool at the same temperature (0.48 vs 0.70), with a bigger typical error (3.9&deg;C vs 2.2&deg;C).</div>
+    </div>
+  </section>
+
+  <!-- 12 : VERDICT -->
+  <section class="slide">
+    <div class="kicker violet">Step 4 &middot; Head-to-head verdict</div>
+    <h2>Which relationship is more reliable &mdash; same-instant comparison</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col"><img src="Temperature sensors data - split sheets/thermocouple_relationship_comparison/best_model_r2_comparison.png" alt="R2 comparison"></div>
+        <div class="img-col"><img src="Temperature sensors data - split sheets/thermocouple_relationship_comparison/best_model_pearson_comparison.png" alt="Pearson comparison"></div>
+        <div class="img-col"><img src="Temperature sensors data - split sheets/thermocouple_relationship_comparison/best_model_rmse_comparison.png" alt="RMSE comparison"></div>
+      </div>
+      <table>
+        <tr><th>Relationship</th><th>Avg R&sup2;</th><th>Avg Pearson r</th><th>Avg RMSE</th><th>Avg MAE</th></tr>
+        <tr><td>Thermocouple vs IdentiCool</td><td class="best">0.5647</td><td class="best">0.7838</td><td class="best">2.31&deg;C</td><td class="best">1.81&deg;C</td></tr>
+        <tr><td>Thermocouple vs Wireless (same instant)</td><td class="weak">0.2631</td><td class="weak">0.5285</td><td>4.43&deg;C</td><td>3.80&deg;C</td></tr>
+      </table>
+      <div class="verdict">Taking each pairing's own best-scoring model and comparing those winners head-to-head: <strong>Thermocouple vs IdentiCool is the more reliable same-instant relationship</strong>, at both 30&deg;C and 37&deg;C. But "same-instant" is doing a lot of work in that sentence &mdash; next slide.</div>
+    </div>
+  </section>
+
+  <!-- 13 : LAG REASONING -->
+  <section class="slide">
+    <div class="kicker good">Step 5 &middot; The twist</div>
+    <h2>Why we suspected a time delay</h2>
+    <div class="body" style="justify-content:center;">
+      <p class="lead" style="font-size:20px; max-width:1050px;">Heat doesn't move instantly. Air around a bird needs time to actually change its core body temperature. If the same-instant ambient reading barely predicts core temperature, that could mean air temperature is irrelevant &mdash; <strong>or</strong> it could mean we're comparing the wrong moments in time.</p>
+      <div class="verdict info" style="font-size:18px;">New question: does ambient temperature from <strong>10, 20, or 30 minutes ago</strong> predict core temperature <em>right now</em> better than the ambient temperature at this exact instant?</div>
+      <ul class="clean">
+        <li>Re-ran the wireless comparison using three lagged features per prediction: wireless reading at t&minus;10, t&minus;20, and t&minus;30 minutes.</li>
+        <li>Same six models, same four metrics, same ranking rule &mdash; only the input timing changed.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 14 : LAGGED 30C -->
+  <section class="slide">
+    <div class="kicker good">Step 5 &middot; Lagged Wireless</div>
+    <h2><span class="badge t30" style="vertical-align:2px;">30&deg;C</span>&nbsp; Predicting core temperature from ambient air 10&ndash;30 min earlier</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col">
+          <img src="Temperature sensors data - split sheets/lagged_thermocouple_wireless_results/30C_lagged_model_results.png" alt="30C lagged models">
+        </div>
+      </div>
+      <div class="model-table-wrap">
+        <table class="model-table">
+          <tr><th>Model</th><th>R&sup2;</th><th>Pearson r</th><th>RMSE</th><th>MAE</th></tr>
+          <tr><td>Linear Regression</td><td>0.363</td><td>0.603</td><td>2.37&deg;C</td><td>1.95&deg;C</td></tr>
+          <tr><td>Ridge Regression</td><td>0.362</td><td>0.603</td><td>2.37&deg;C</td><td>1.95&deg;C</td></tr>
+          <tr><td>Random Forest</td><td>0.647</td><td>0.811</td><td>1.77&deg;C</td><td>1.31&deg;C</td></tr>
+        </table>
+        <table class="model-table">
+          <tr><th>Model</th><th>R&sup2;</th><th>Pearson r</th><th>RMSE</th><th>MAE</th></tr>
+          <tr class="winner"><td>Gradient Boosting</td><td>0.721</td><td>0.850</td><td>1.57&deg;C</td><td>1.06&deg;C</td></tr>
+          <tr><td>KNN Regression</td><td>0.542</td><td>0.760</td><td>2.01&deg;C</td><td>1.65&deg;C</td></tr>
+          <tr><td>SVR</td><td>0.470</td><td>0.713</td><td>2.17&deg;C</td><td>1.64&deg;C</td></tr>
+        </table>
+      </div>
+      <div class="verdict">Gradient Boosting explains 72% of the variation once a delay is allowed for &mdash; far beyond the 4% from the same-instant comparison, and even beyond IdentiCool's 43% at this temperature. The straight-line models (Linear, Ridge) barely improve, which tells us this relationship isn't simply linear &mdash; it needs a model that can bend.</div>
+    </div>
+  </section>
+
+  <!-- 15 : LAGGED 37C -->
+  <section class="slide">
+    <div class="kicker good">Step 5 &middot; Lagged Wireless</div>
+    <h2><span class="badge t37" style="vertical-align:2px;">37&deg;C</span>&nbsp; Predicting core temperature from ambient air 10&ndash;30 min earlier</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col">
+          <img src="Temperature sensors data - split sheets/lagged_thermocouple_wireless_results/37C_lagged_model_results.png" alt="37C lagged models">
+        </div>
+      </div>
+      <div class="model-table-wrap">
+        <table class="model-table">
+          <tr><th>Model</th><th>R&sup2;</th><th>Pearson r</th><th>RMSE</th><th>MAE</th></tr>
+          <tr><td>Linear Regression</td><td>0.578</td><td>0.774</td><td>1.90&deg;C</td><td>1.53&deg;C</td></tr>
+          <tr><td>Ridge Regression</td><td>0.577</td><td>0.773</td><td>1.91&deg;C</td><td>1.53&deg;C</td></tr>
+          <tr><td>Random Forest</td><td>0.737</td><td>0.879</td><td>1.50&deg;C</td><td>1.16&deg;C</td></tr>
+        </table>
+        <table class="model-table">
+          <tr><th>Model</th><th>R&sup2;</th><th>Pearson r</th><th>RMSE</th><th>MAE</th></tr>
+          <tr class="winner"><td>Gradient Boosting</td><td>0.827</td><td>0.920</td><td>1.22&deg;C</td><td>0.84&deg;C</td></tr>
+          <tr><td>KNN Regression</td><td>0.615</td><td>0.797</td><td>1.82&deg;C</td><td>1.38&deg;C</td></tr>
+          <tr><td>SVR</td><td>0.585</td><td>0.791</td><td>1.89&deg;C</td><td>1.36&deg;C</td></tr>
+        </table>
+      </div>
+      <div class="verdict">Same story, even stronger &mdash; 83% of the variation explained, the best result of any relationship tested at either temperature, with the smallest average error (1.2&deg;C) in the whole study.</div>
+    </div>
+  </section>
+
+  <!-- 16 : PHYSICS INTRO -->
+  <section class="slide">
+    <div class="kicker critical">Step 6 &middot; Sanity check</div>
+    <h2>Does a real law of physics explain the lag?</h2>
+    <div class="body" style="justify-content:center;">
+      <p class="lead" style="font-size:20px; max-width:1050px;">The lag models found a strong statistical pattern &mdash; but statistics alone don't prove a mechanism. We tested whether a textbook law of heat transfer, <strong>Newton's Law of Cooling</strong>, reproduces the same behavior on its own: core temperature drifts toward ambient temperature at a rate proportional to how far apart they currently are.</p>
+      <div class="verdict info" style="font-size:17px;">dT<sub>core</sub>/dt = k &times; (T<sub>ambient</sub> &minus; T<sub>core</sub>) &mdash; in words: "the bigger the gap between air and core temperature, the faster the core temperature moves to close it."</div>
+      <ul class="clean">
+        <li><strong>One-step check</strong>: does the formula predict the very next reading correctly?</li>
+        <li><strong>Recursive check (the honest test)</strong>: starting from one known point, let the formula simulate forward entirely on its own, the way it would have to work in real-time use.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 17 : PHYSICS RESULTS -->
+  <section class="slide">
+    <div class="kicker critical">Step 6 &middot; Physics model results</div>
+    <h2>Newton's Cooling model &mdash; does it hold up?</h2>
+    <div class="body">
+      <div class="stat-row">
+        <div class="stat-tile critical"><span class="badge t30">30&deg;C</span><div class="stat-value" style="margin-top:8px;">R&sup2; &minus;3.68</div><div class="stat-label">Recursive test &mdash; model diverges</div></div>
+        <div class="stat-tile good"><span class="badge t37">37&deg;C</span><div class="stat-value" style="margin-top:8px;">R&sup2; 0.75</div><div class="stat-label">Recursive test &mdash; model tracks well</div></div>
+      </div>
+      <div class="img-row">
+        <div class="img-col">
+          <span class="badge t30">30&deg;C</span>
+          <img src="Temperature sensors data - split sheets/exponential_thermal_model_results/30C_exponential_thermal_fit.png" alt="30C Newton cooling fit">
+        </div>
+        <div class="img-col">
+          <span class="badge t37">37&deg;C</span>
+          <img src="Temperature sensors data - split sheets/exponential_thermal_model_results/37C_exponential_thermal_fit.png" alt="37C Newton cooling fit">
+        </div>
+      </div>
+      <div class="verdict warn">30&deg;C: the predicted core temperature (orange) drifts steadily away from the actual reading (blue) &mdash; the simple physics model breaks down here, most likely because this run didn't have enough temperature swing for the fit to lock onto a reliable rate. 37&deg;C: the same model holds up closely. The data-driven lag model (previous slides) is currently the more dependable option to use.</div>
+    </div>
+  </section>
+
+  <!-- 18 : RECAP PART 1 -->
+  <section class="slide">
+    <div class="kicker muted">Recap (1/2)</div>
+    <h2>All results, side by side &mdash; same-instant comparisons</h2>
+    <div class="body">
+      <table>
+        <tr><th>Pipeline</th><th>Condition</th><th>Best model</th><th>R&sup2;</th><th>Pearson r</th><th>RMSE</th></tr>
+        <tr><td>Baseline (3-sensor)</td><td>30&deg;C</td><td>Ridge</td><td>0.673</td><td>0.833</td><td>1.85&deg;C</td></tr>
+        <tr><td>Baseline (3-sensor)</td><td>37&deg;C</td><td>Linear</td><td>0.717</td><td>0.857</td><td>2.10&deg;C</td></tr>
+        <tr class="section-row"><td colspan="6">Thermocouple vs IdentiCool</td></tr>
+        <tr><td>&mdash;</td><td>30&deg;C</td><td>Ridge</td><td>0.434</td><td>0.703</td><td>2.43&deg;C</td></tr>
+        <tr><td>&mdash;</td><td>37&deg;C</td><td>SVR</td><td>0.695</td><td>0.865</td><td>2.18&deg;C</td></tr>
+        <tr class="section-row"><td colspan="6">Thermocouple vs Wireless (same time-step)</td></tr>
+        <tr><td>&mdash;</td><td>30&deg;C</td><td>Ridge</td><td class="weak">0.042</td><td>0.336</td><td>4.95&deg;C</td></tr>
+        <tr><td>&mdash;</td><td>37&deg;C</td><td>SVR</td><td>0.484</td><td>0.721</td><td>3.92&deg;C</td></tr>
+      </table>
+      <div class="verdict info">Among same-instant comparisons, IdentiCool is consistently the stronger predictor of core temperature.</div>
+    </div>
+  </section>
+
+  <!-- 19 : RECAP PART 2 -->
+  <section class="slide">
+    <div class="kicker muted">Recap (2/2)</div>
+    <h2>All results, side by side &mdash; lag &amp; physics follow-ups</h2>
+    <div class="body">
+      <table>
+        <tr><th>Pipeline</th><th>Condition</th><th>Best model</th><th>R&sup2;</th><th>Pearson r</th><th>RMSE</th></tr>
+        <tr class="section-row"><td colspan="6">Thermocouple vs Wireless (lagged 10/20/30 min)</td></tr>
+        <tr><td>&mdash;</td><td>30&deg;C</td><td>Gradient Boosting</td><td class="best">0.721</td><td>0.850</td><td>1.57&deg;C</td></tr>
+        <tr><td>&mdash;</td><td>37&deg;C</td><td>Gradient Boosting</td><td class="best">0.827</td><td>0.920</td><td>1.22&deg;C</td></tr>
+        <tr class="section-row"><td colspan="6">Newton's Cooling physics model (recursive)</td></tr>
+        <tr><td>&mdash;</td><td>30&deg;C</td><td>Newton + offset</td><td class="weak">&minus;3.681</td><td>&minus;0.940</td><td>6.13&deg;C</td></tr>
+        <tr><td>&mdash;</td><td>37&deg;C</td><td>Newton + offset</td><td>0.752</td><td>0.900</td><td>0.40&deg;C</td></tr>
+      </table>
+      <div class="verdict">Overall strongest relationship in the whole study: Thermocouple vs Wireless, <strong>with a time lag</strong> &mdash; it beat every other pairing at both temperatures once we accounted for the delay between ambient air and core temperature.</div>
+    </div>
+  </section>
+
+  <!-- 20 : RECOMMENDATIONS -->
+  <section class="slide">
+    <div class="kicker good">Recommendation</div>
+    <h2>What we should do with this</h2>
+    <div class="body">
+      <ol class="clean">
+        <li><strong>For an immediate, same-instant estimate</strong> with no extra math, IdentiCool is the more reliable proxy today (R&sup2; 0.43&ndash;0.70 vs 0.04&ndash;0.48 for same-instant wireless).</li>
+        <li><strong>If a short delay is acceptable</strong> &mdash; or a 10&ndash;30 minute correction can be built into the workflow &mdash; the ambient wireless sensor becomes the single best predictor overall (R&sup2; 0.72&ndash;0.83), beating IdentiCool while being fully non-invasive.</li>
+        <li><strong>The physics-based model isn't ready</strong> to replace the data-driven lag model yet &mdash; it fits well at 37&deg;C but breaks down at 30&deg;C.</li>
+        <li><strong>37&deg;C is consistently easier to model</strong> than 30&deg;C across every single pipeline tested &mdash; worth flagging for future data collection.</li>
+      </ol>
+      <div class="verdict">Bottom line: IdentiCool is the safer choice today for instant readings, but wireless + a lag correction is the more promising long-term path if non-invasive, remote sensing is the goal.</div>
+    </div>
+  </section>
+
+  <!-- 21 : NEXT STEPS -->
+  <section class="slide">
+    <div class="kicker muted">Open questions / next steps</div>
+    <h2>Where this goes next</h2>
+    <div class="body">
+      <ul class="clean">
+        <li>Formally tune the lag window (test delays beyond 10/20/30 min) to find the optimal delay per condition.</li>
+        <li>Investigate why the physics model diverges at 30&deg;C &mdash; likely a fitting/data-volume issue, not a fundamentally wrong mechanism.</li>
+        <li>Collect more 30&deg;C samples to check whether the weaker fit is a data-volume issue rather than a real physical difference.</li>
+        <li>Build out the dashboard (wireframe already drafted) so these comparisons can be re-run and viewed without opening scripts.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 22 : APPENDIX -->
+  <section class="slide">
+    <div class="kicker muted">Appendix</div>
+    <h2>Full results index</h2>
+    <div class="body">
+      <div class="appendix-grid">
+        <div>
+          <h3>correlation_model_results/</h3>
+          <p>Baseline 3-sensor alignment, correlation matrices, and per-model scatter fits for 30&deg;C / 37&deg;C.</p>
+        </div>
+        <div>
+          <h3>thermocouple_identicool_results/</h3>
+          <p>Thermocouple vs IdentiCool trends, correlation, and model results per condition.</p>
+        </div>
+        <div>
+          <h3>thermocouple_wireless_results/</h3>
+          <p>Thermocouple vs Wireless (same time-step) trends, correlation, and model results.</p>
+        </div>
+        <div>
+          <h3>thermocouple_relationship_comparison/</h3>
+          <p>Head-to-head reliability comparison: R&sup2;, Pearson r, RMSE bar charts and summary text.</p>
+        </div>
+        <div>
+          <h3>lagged_thermocouple_wireless_results/</h3>
+          <p>Wireless sensor lagged 10/20/30 min as predictors of thermocouple temperature; lag coefficient plots.</p>
+        </div>
+        <div>
+          <h3>exponential_thermal_model_results/</h3>
+          <p>Newton's Cooling physics model fit, one-step and recursive evaluation, derivative relationship plots.</p>
+        </div>
+      </div>
+      <p class="caption" style="margin-top:4px;">Scripts: analyze_sensor_correlations.py &middot; analyze_thermocouple_wireless_correlations.py &middot; analyze_thermocouple_identicool_correlations.py &middot; compare_thermocouple_relationships.py &middot; analyze_lagged_thermocouple_wireless.py &middot; analyze_exponential_thermal_models.py</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="progress" id="progress"></div>
+<div class="navbar">
+  <button id="prevBtn" title="Previous (&larr;)">&#8592;</button>
+  <span class="count" id="count">1 / 22</span>
+  <button id="nextBtn" title="Next (&rarr;)">&#8594;</button>
+  <button class="fs" id="fsBtn" title="Fullscreen">Fullscreen</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let idx = 0;
+  const countEl = document.getElementById('count');
+  const progressEl = document.getElementById('progress');
+
+  function show(i){
+    idx = Math.max(0, Math.min(total - 1, i));
+    slides.forEach((s, n) => s.classList.toggle('active', n === idx));
+    countEl.textContent = (idx + 1) + ' / ' + total;
+    progressEl.style.width = (((idx + 1) / total) * 100) + '%';
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => show(idx - 1));
+  document.getElementById('nextBtn').addEventListener('click', () => show(idx + 1));
+  document.getElementById('fsBtn').addEventListener('click', () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){ e.preventDefault(); show(idx + 1); }
+    if (['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){ e.preventDefault(); show(idx - 1); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(total - 1);
+  });
+
+  show(0);
+</script>
+
+</body>
+</html>

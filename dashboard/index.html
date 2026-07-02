@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Temperature Correlation Dashboard</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <h1>Internal &amp; External Temperature Correlation</h1>
+  <span class="pill" id="datasetPill"><span class="dot"></span> Checking datasets&hellip;</span>
+  <div class="spacer"></div>
+  <button id="uploadBtn">Upload Data</button>
+  <button id="refreshBtn">Refresh</button>
+  <button class="primary" id="runAllBtn">Run All Analyses</button>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="t30">30&deg;C Analysis</button>
+  <button class="tab-btn" data-tab="t37">37&deg;C Analysis</button>
+  <button class="tab-btn" data-tab="comparison">Relationship Comparison</button>
+  <button class="tab-btn" data-tab="lagphysics">Lag &amp; Physics</button>
+  <button class="tab-btn" data-tab="dataset">Dataset Management</button>
+  <button class="tab-btn" data-tab="explorer">Results Explorer</button>
+</nav>
+
+<main>
+
+  <!-- OVERVIEW -->
+  <section class="tab-panel active" id="tab-overview">
+    <h2>Overview</h2>
+    <p class="subtitle">Live summary, computed from the latest result files. Click "Run All Analyses" to regenerate everything from the source workbooks.</p>
+    <div class="card-row" id="overviewCards"><div class="card"><div class="card-label">Loading&hellip;</div></div></div>
+    <div class="fig-row">
+      <div class="fig">
+        <span class="fig-label t30">30&deg;C</span>
+        <img id="img-overview-30" alt="30C aligned trends">
+      </div>
+      <div class="fig">
+        <span class="fig-label t37">37&deg;C</span>
+        <img id="img-overview-37" alt="37C aligned trends">
+      </div>
+    </div>
+    <div class="fig-row">
+      <div class="fig"><img id="img-overview-r2" alt="R2 comparison"></div>
+      <div class="fig"><img id="img-overview-pearson" alt="Pearson comparison"></div>
+    </div>
+  </section>
+
+  <!-- 30C -->
+  <section class="tab-panel" id="tab-t30">
+    <h2><span class="fig-label t30">30&deg;C</span> Analysis</h2>
+    <p class="subtitle">Baseline three-sensor alignment, then Thermocouple vs IdentiCool and vs Wireless at this temperature.</p>
+    <div class="fig-row">
+      <div class="fig"><div class="callout info">Aligned trends</div><img id="img-t30-trends" alt="30C trends"></div>
+      <div class="fig"><div class="callout info">Correlation matrix</div><img id="img-t30-corr" alt="30C correlation matrix"></div>
+    </div>
+    <h3 style="margin:6px 0 0 0;">Thermocouple vs IdentiCool</h3>
+    <div class="fig-row"><div class="fig"><img id="img-t30-identicool" alt="30C TC vs IdentiCool"></div></div>
+    <div id="table-t30-identicool"></div>
+    <h3 style="margin:10px 0 0 0;">Thermocouple vs Wireless (same instant)</h3>
+    <div class="fig-row"><div class="fig"><img id="img-t30-wireless" alt="30C TC vs Wireless"></div></div>
+    <div id="table-t30-wireless"></div>
+  </section>
+
+  <!-- 37C -->
+  <section class="tab-panel" id="tab-t37">
+    <h2><span class="fig-label t37">37&deg;C</span> Analysis</h2>
+    <p class="subtitle">Baseline three-sensor alignment, then Thermocouple vs IdentiCool and vs Wireless at this temperature.</p>
+    <div class="fig-row">
+      <div class="fig"><div class="callout info">Aligned trends</div><img id="img-t37-trends" alt="37C trends"></div>
+      <div class="fig"><div class="callout info">Correlation matrix</div><img id="img-t37-corr" alt="37C correlation matrix"></div>
+    </div>
+    <h3 style="margin:6px 0 0 0;">Thermocouple vs IdentiCool</h3>
+    <div class="fig-row"><div class="fig"><img id="img-t37-identicool" alt="37C TC vs IdentiCool"></div></div>
+    <div id="table-t37-identicool"></div>
+    <h3 style="margin:10px 0 0 0;">Thermocouple vs Wireless (same instant)</h3>
+    <div class="fig-row"><div class="fig"><img id="img-t37-wireless" alt="37C TC vs Wireless"></div></div>
+    <div id="table-t37-wireless"></div>
+  </section>
+
+  <!-- COMPARISON -->
+  <section class="tab-panel" id="tab-comparison">
+    <h2>Relationship Reliability Comparison</h2>
+    <p class="subtitle">Ranking rule: highest R&sup2; first, then highest Pearson r, then lowest RMSE.</p>
+    <div class="fig-row">
+      <div class="fig"><img id="img-cmp-r2" alt="R2 comparison"></div>
+      <div class="fig"><img id="img-cmp-pearson" alt="Pearson comparison"></div>
+      <div class="fig"><img id="img-cmp-rmse" alt="RMSE comparison"></div>
+    </div>
+    <div class="filter-row">
+      <label>Temperature: <select id="filterTemp"><option value="all">All</option><option value="30C">30&deg;C</option><option value="37C">37&deg;C</option></select></label>
+      <label>Relationship: <select id="filterRel"><option value="all">All</option></select></label>
+    </div>
+    <div id="table-comparison"></div>
+    <div class="callout" id="comparisonVerdict"></div>
+  </section>
+
+  <!-- LAG & PHYSICS -->
+  <section class="tab-panel" id="tab-lagphysics">
+    <h2>Time-Lag &amp; Physics Follow-ups</h2>
+    <p class="subtitle">Does a delay explain the weak same-instant wireless relationship, and does a real physics model reproduce it?</p>
+    <h3 style="margin:0;">Lagged wireless (t&minus;10 / t&minus;20 / t&minus;30 min) &rarr; thermocouple</h3>
+    <div class="fig-row">
+      <div class="fig"><span class="fig-label t30">30&deg;C</span><img id="img-lag-30" alt="30C lagged"></div>
+      <div class="fig"><span class="fig-label t37">37&deg;C</span><img id="img-lag-37" alt="37C lagged"></div>
+    </div>
+    <div class="fig-row">
+      <div id="table-lag-30" style="flex:1;"></div>
+      <div id="table-lag-37" style="flex:1;"></div>
+    </div>
+    <h3 style="margin:10px 0 0 0;">Newton's Cooling physics model (recursive simulation)</h3>
+    <div class="fig-row">
+      <div class="fig"><span class="fig-label t30">30&deg;C</span><img id="img-phys-30" alt="30C physics"></div>
+      <div class="fig"><span class="fig-label t37">37&deg;C</span><img id="img-phys-37" alt="37C physics"></div>
+    </div>
+    <div id="table-physics"></div>
+  </section>
+
+  <!-- DATASET MANAGEMENT -->
+  <section class="tab-panel" id="tab-dataset">
+    <h2>Dataset Management</h2>
+    <p class="subtitle">Required source workbooks in "Temperature sensors data - split sheets/". Replace with same filenames to update the analysis.</p>
+    <div id="datasetTable"></div>
+    <div class="card-row" style="align-items:center;">
+      <button id="dsUploadBtn">Upload Data</button>
+      <button id="dsRefreshBtn">Validate Files</button>
+      <button class="primary" id="dsRunAllBtn">Run All Scripts</button>
+      <label style="font-size:13px; color:var(--text-secondary); display:flex; align-items:center; gap:8px;">
+        <select id="folderSelect"></select>
+        <button id="dsOpenResultsBtn">Open Folder</button>
+      </label>
+    </div>
+  </section>
+
+  <!-- RESULTS EXPLORER -->
+  <section class="tab-panel" id="tab-explorer">
+    <h2>Results Explorer</h2>
+    <p class="subtitle">Every file currently on disk in each result folder. Click a file to open it.</p>
+    <div id="explorerList" style="display:flex; flex-direction:column; gap:10px;"></div>
+  </section>
+
+</main>
+
+<div id="runLog">
+  <button class="close-log" id="closeLogBtn">&times;</button>
+  <h4>Run log</h4>
+  <div id="runLogBody"></div>
+</div>
+
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal">
+    <button class="modal-close" id="closeUploadModal">&times;</button>
+    <h2>Upload New Sensor Data</h2>
+    <p class="subtitle">Replace the source workbooks below, then use "Run All Analyses" to train the same models on the new data.</p>
+    <div class="callout info">
+      <strong>Upload rules</strong>
+      <ul style="margin:6px 0 0 0; padding-left:18px;">
+        <li>Upload one file <strong>per sensor</strong> &mdash; six separate files below, not one combined workbook.</li>
+        <li>Each file should contain only that sensor's own data (a single sheet/page), not multiple sensors combined &mdash; this keeps the computation simple and unambiguous.</li>
+        <li>Accepted formats: <strong>.xlsx</strong> (fully supported), or .xls / .csv (accepted and saved, see note below).</li>
+        <li>Uploading a file replaces the existing one for that sensor slot.</li>
+      </ul>
+    </div>
+    <div class="upload-grid" id="uploadGrid"></div>
+    <div class="callout warn">
+      <strong>Coming soon:</strong> automatic checking that an uploaded file matches the expected column layout, and automatic .xls/.csv &rarr; .xlsx conversion. Today, .xlsx uploads go live immediately and must already match the existing template (see README); .xls/.csv uploads are saved to <code>_pending_uploads/</code> for manual conversion.
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

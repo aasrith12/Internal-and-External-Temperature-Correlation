@@ -1,0 +1,20 @@
+Exponential thermal model setup
+Scientific model: dTcore/dt = k(Tenv - Tcore)
+Ambient/external input: wireless temperature sensor.
+Core/internal target: thermocouple temperature.
+Evaluation reports recursive test simulation as the main score.
+
+30C Wireless Sensor 1 to Thermocouple
+Rows: 476 total, 357 train, 119 test
+Best model by recursive R2: Newton Cooling + Ambient Offset (-3.6812)
+                          Model  k_per_minute  thermal_time_constant_minutes  ambient_offset_C  OneStep_R2  OneStep_RMSE  OneStep_MAE  OneStep_Pearson_r  Recursive_R2  Recursive_RMSE  Recursive_MAE  Recursive_Pearson_r
+            Pure Newton Cooling        0.0031                       327.6704            0.0000      0.5214        1.9588       0.2326             0.7706       -3.6887          6.1309         2.0225              -0.9403
+Newton Cooling + Ambient Offset        0.0031                       327.5854           -0.0181      0.5221        1.9572       0.2324             0.7709       -3.6812          6.1260         2.0215              -0.9404
+
+37C Wireless Sensor 2 to Thermocouple
+Rows: 490 total, 367 train, 123 test
+Best model by recursive R2: Newton Cooling + Ambient Offset (0.7523)
+                          Model  k_per_minute  thermal_time_constant_minutes  ambient_offset_C  OneStep_R2  OneStep_RMSE  OneStep_MAE  OneStep_Pearson_r  Recursive_R2  Recursive_RMSE  Recursive_MAE  Recursive_Pearson_r
+            Pure Newton Cooling        0.0046                       215.5348             0.000      0.9755        0.1255       0.0988              0.988        0.7521          0.3995         0.3351               0.9003
+Newton Cooling + Ambient Offset        0.0046                       215.4547            -0.009      0.9755        0.1255       0.0988              0.988        0.7523          0.3992         0.3349               0.9002
+

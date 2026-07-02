@@ -1,0 +1,30 @@
+Lagged regression setup
+Ambient/external input: wireless sensor at t-10, t-20, and t-30 minutes.
+Core/internal target: thermocouple temperature at time t.
+
+30C Lagged Wireless Sensor 1 to Thermocouple
+Aligned lagged rows: 252
+Features: Wireless Temperature Sensor 1 lag 10min, Wireless Temperature Sensor 1 lag 20min, Wireless Temperature Sensor 1 lag 30min
+Best model by R2: Gradient Boosting (0.7214)
+                       R2    RMSE     MAE  Pearson_r
+Model                                               
+Linear Regression  0.3629  2.3741  1.9484     0.6033
+Ridge Regression   0.3624  2.3749  1.9525     0.6030
+Random Forest      0.6466  1.7682  1.3128     0.8105
+Gradient Boosting  0.7214  1.5699  1.0551     0.8502
+KNN Regression     0.5422  2.0124  1.6497     0.7602
+SVR                0.4701  2.1650  1.6440     0.7128
+
+37C Lagged Wireless Sensor 2 to Thermocouple
+Aligned lagged rows: 246
+Features: Wireless Temperature Sensor 2 lag 10min, Wireless Temperature Sensor 2 lag 20min, Wireless Temperature Sensor 2 lag 30min
+Best model by R2: Gradient Boosting (0.8265)
+                       R2    RMSE     MAE  Pearson_r
+Model                                               
+Linear Regression  0.5780  1.9045  1.5265     0.7739
+Ridge Regression   0.5765  1.9080  1.5317     0.7732
+Random Forest      0.7369  1.5039  1.1552     0.8790
+Gradient Boosting  0.8265  1.2211  0.8361     0.9199
+KNN Regression     0.6147  1.8198  1.3802     0.7967
+SVR                0.5849  1.8889  1.3552     0.7905
+

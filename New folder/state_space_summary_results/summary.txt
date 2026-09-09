@@ -1,0 +1,30 @@
+State-space summary analysis
+Risk threshold used: value >= 4
+
+Layer ranking by hour-24 mean value:
+- Layer 1: hour-24 mean=7.42, change 0->24=7.58
+- Layer 4: hour-24 mean=5.33, change 0->24=5.73
+- Layer 2: hour-24 mean=3.76, change 0->24=4.63
+- Layer 3: hour-24 mean=2.62, change 0->24=3.28
+
+Highest boxes at hour 24:
+- L1B3: hour-24 mean=7.58, layer=1, exposed surfaces=3
+- L1B5: hour-24 mean=7.58, layer=1, exposed surfaces=3
+- L1B4: hour-24 mean=7.40, layer=1, exposed surfaces=2
+- L1B2: hour-24 mean=7.32, layer=1, exposed surfaces=3
+- L1B1: hour-24 mean=7.25, layer=1, exposed surfaces=3
+- L4B18: hour-24 mean=6.88, layer=4, exposed surfaces=3
+- L4B20: hour-24 mean=5.78, layer=4, exposed surfaces=3
+- L2B6: hour-24 mean=5.70, layer=2, exposed surfaces=2
+
+Earliest boxes with any risk crossing:
+- L1B4: first risk hour=6.0, risk at 24h=75.0%
+- L1B3: first risk hour=8.0, risk at 24h=100.0%
+- L1B1: first risk hour=10.0, risk at 24h=100.0%
+- L1B2: first risk hour=10.0, risk at 24h=100.0%
+- L1B5: first risk hour=10.0, risk at 24h=100.0%
+- L4B20: first risk hour=12.0, risk at 24h=100.0%
+- L4B18: first risk hour=14.0, risk at 24h=100.0%
+- L4B17: first risk hour=14.0, risk at 24h=75.0%
+- L3B13: first risk hour=14.0, risk at 24h=60.0%
+- L2B6: first risk hour=16.0, risk at 24h=100.0%

@@ -1,159 +1,180 @@
-# Internal and External Temperature Correlation
+# 🌡️ Temperature Intelligence & Pallet Atlas
 
-This repository contains temperature monitoring workbooks, split sensor workbooks, Python analysis scripts, generated plots, a presentation deck, and a local live dashboard for comparing internal and external temperature sensors.
+**From raw sensor readings to predictive models and interactive pallet insights.**
 
-The core question: can a non-invasive ambient sensor (Wireless) reliably stand in for a direct core-temperature probe (Thermocouple), or does an internal reference probe (IdentiCool) need to be used instead?
+A data analysis and visualization project exploring how internal and external temperature measurements relate, how thermal response changes over time, and how observed pallet measurements compare with Monte Carlo simulations.
 
-## Project structure
+🐍 Python · 📊 Statistical modeling · 🎲 Monte Carlo analysis · 🧊 Interactive 3D visualization · 🌐 Offline web interface
 
-```text
-.
-├── Temperature Monitoring Data.xlsx
-├── Temperature sensors data.xlsx
-├── Temperature Monitoring Data - split sheets/
-├── Temperature_Correlation_Presentation.html   # slide-deck results walkthrough (open in a browser)
-├── Run Dashboard.bat                            # double-click to launch the live dashboard
-├── WIREFRAME.md                                 # original dashboard wireframe/design notes
-├── dashboard/                                    # local live dashboard (server + UI)
-│   ├── server.py
-│   ├── index.html
-│   ├── app.js
-│   └── styles.css
-├── Temperature sensors data - split sheets/
-│   ├── analyze_sensor_correlations.py
-│   ├── analyze_thermocouple_wireless_correlations.py
-│   ├── analyze_thermocouple_identicool_correlations.py
-│   ├── compare_thermocouple_relationships.py
-│   ├── analyze_lagged_thermocouple_wireless.py
-│   ├── analyze_exponential_thermal_models.py
-│   ├── correlation_model_results/
-│   ├── thermocouple_wireless_results/
-│   ├── thermocouple_identicool_results/
-│   ├── thermocouple_relationship_comparison/
-│   ├── lagged_thermocouple_wireless_results/
-│   └── exponential_thermal_model_results/
-```
+## 🎯 Project brief
 
-## Requirements
+**Objective:** assess whether non-invasive wireless readings can help estimate internal temperature, then make box-level pallet results easy to explore and trace back to source data.
 
-Use Python 3.10 or newer.
+The work covers data cleaning, sensor alignment, regression benchmarking, lag analysis, thermal modeling, simulation comparisons, and browser-based reporting. Deliverables include reproducible Python scripts, source workbooks, cleaned CSVs, charts, two presentation decks, a local dashboard, and the offline Pallet Atlas.
 
-Install the required packages:
+## ✨ What you can explore
 
-```bash
-pip install pandas openpyxl matplotlib scikit-learn numpy
-```
+| Component | Capabilities |
+| --- | --- |
+| **Sensor correlation analysis** | Compare Thermocouple, IdentiCool, and Wireless readings at 30°C and 37°C across six regression models. |
+| **Time-lag and thermal models** | Evaluate earlier wireless readings at 10/20/30-minute lags and a Newton’s Law of Cooling model. |
+| **Live dashboard** | Browse metrics and plots, check datasets, upload readings, and rerun the sensor pipeline. |
+| **Pallet analysis** | Clean state-space and Monte Carlo workbooks; compare box and layer trends, threshold crossings, rankings, and simulation intervals. |
+| **Pallet Atlas** | Rotate and zoom a 20-box pallet, separate layers, select boxes and hours, and inspect individual reports. |
+| **Data & alignment view** | Inspect source readings, simulations, geometry checks, and downloadable snapshots with SHA-256 fingerprints. |
+| **Presentation decks** | Walk through sensor correlation and pallet temperature results in the browser. |
 
-No extra packages are needed for the dashboard server — it's built on the Python standard library only.
+## 🖼️ Preview
 
-## Running the scripts
+![Pallet Atlas interactive dashboard](pallet%20webpage/preview.png)
 
-Open a terminal in the repository root, then move into the sensor folder:
+## 🚀 Quick start
+
+### Explore Pallet Atlas — no installation needed
+
+Open [`pallet webpage/index.html`](pallet%20webpage/index.html) from your local checkout in a modern browser. It runs offline with bundled data and no external JavaScript or font dependencies.
+
+Drag to rotate, scroll to zoom, and click a box to inspect its results. Switch hours or separate layers to explore hidden positions. Open **Data & alignment** to review the underlying records.
+
+See the [Pallet Atlas guide](pallet%20webpage/README.md) for controls, audit details, and data interpretation. GitHub displays HTML source; download or clone the repository to use the pages.
+
+### Run the sensor dashboard
+
+Use **Python 3.10+**. From the repository root:
 
 ```bash
-cd "Temperature sensors data - split sheets"
-```
-
-Run each stage in order (later scripts depend on the output of earlier ones):
-
-```bash
-python analyze_sensor_correlations.py                    # baseline: all three sensors aligned
-python analyze_thermocouple_identicool_correlations.py   # Thermocouple vs IdentiCool
-python analyze_thermocouple_wireless_correlations.py     # Thermocouple vs Wireless, same instant
-python compare_thermocouple_relationships.py             # head-to-head reliability verdict
-python analyze_lagged_thermocouple_wireless.py           # Thermocouple vs Wireless, 10/20/30 min lag
-python analyze_exponential_thermal_models.py             # Newton's Cooling physics-model sanity check
-```
-
-Each script writes its own result folder (CSV metrics + PNG plots + a `summary.txt`), matching the list under [Project structure](#project-structure).
-
-The dashboard (below) can also run all six scripts for you, in the correct order, from a button in the browser.
-
-## Live dashboard
-
-A local, no-install dashboard that shows every result above as a live, filterable UI instead of static files.
-
-**To launch it:** double-click `Run Dashboard.bat` at the project root. It starts a local server and opens the dashboard in your browser automatically.
-
-Or manually:
-
-```bash
+python -m pip install pandas openpyxl matplotlib scikit-learn numpy
 python dashboard/server.py
 ```
 
-then open `http://127.0.0.1:8765/dashboard/index.html`. Leave the terminal/console window open while using the dashboard — closing it stops the server. The server only listens on `127.0.0.1` (your own machine), it is not exposed to the network.
+Open **http://127.0.0.1:8765/dashboard/index.html** and keep the terminal open. On Windows, you can also double-click [`Run Dashboard.bat`](Run%20Dashboard.bat).
 
-What's in it:
+The server uses Python’s standard library and listens on your own machine at `127.0.0.1`. Analysis reruns require the packages above.
 
-- **Overview** — live summary cards (best 30&deg;C match, best 37&deg;C match, overall most reliable relationship), computed from the current result files, not hardcoded.
-- **30&deg;C / 37&deg;C Analysis** — aligned trends, correlation matrix, and a live 6-model results table (winning model highlighted) for both IdentiCool and Wireless.
-- **Relationship Comparison** — the reliability bar charts plus a filterable table (filter by temperature and/or relationship).
-- **Lag & Physics** — the time-lag follow-up and the Newton's Cooling physics-model check.
-- **Dataset Management** — live Found/Missing status and last-modified time for the six required source workbooks, plus buttons to validate files, run all scripts, and open a results folder.
-- **Results Explorer** — every file currently on disk in each result folder, clickable.
-- **Run All Analyses** — re-runs all six scripts in the correct order and refreshes every chart/table with the new results. Takes roughly 20-30 seconds.
-- **Upload Data** — replace the source workbooks with new sensor readings without touching the file system by hand. See [Uploading new data](#uploading-new-data) below.
+### View the presentations
 
-## Presentation deck
+Open either file locally in your browser:
 
-`Temperature_Correlation_Presentation.html` is a self-contained, 22-slide walkthrough of the full analysis, written for a non-technical audience — it explains what each sensor measures, what R&sup2;/Pearson r/RMSE/MAE mean in plain language, why six different models are tested, and walks through every result with the winning model highlighted against the other five. Double-click it to open in a browser; no server required. Use the arrow keys or the on-screen buttons to navigate, and the "Fullscreen" button when presenting. `Ctrl+P` (Landscape) exports it to PDF as a backup.
+- [Sensor Correlation Presentation](Temperature_Correlation_Presentation.html)
+- [Pallet Temperature Risk Presentation](Pallet_Temperature_Risk_Presentation.html)
 
-## Uploading new data
+## 🗂️ Repository map
 
-From the dashboard, click **Upload Data** (top bar, or in Dataset Management) to open the upload modal. Rules enforced there:
+| Location | Contents |
+| --- | --- |
+| `Temperature Monitoring Data.xlsx` / `Temperature sensors data.xlsx` | Original monitoring and sensor workbooks. |
+| `Temperature Monitoring Data - split sheets/` | Split monitoring datasets. |
+| `Temperature sensors data - split sheets/` | Sensor inputs, six analysis scripts, and generated result folders. |
+| `dashboard/` | Local Python server and dashboard HTML, CSS, and JavaScript. |
+| `New folder/` | Pallet source workbooks, cleaning scripts, cleaned data, and state-space/Monte Carlo results. |
+| `pallet webpage/` | Pallet Atlas, data alignment page, audited data snapshot, source downloads, and browser checks. |
+| `*_Presentation.html` | Browser presentation decks. |
+| `WIREFRAME.md` | Original dashboard design notes. |
 
-- Upload one file **per sensor** — six separate slots (IdentiCool 1/2, Thermocouple 30C/37C, Wireless 1/2), never a combined workbook.
-- Each file should contain only that sensor's own data (a single sheet/page), so the scripts can read it unambiguously.
-- Accepted formats: `.xlsx`, `.xls`, `.csv`.
+Keep the existing folder names when running scripts; the pipelines reference these paths.
 
-Current behavior:
+## 🔬 Reproduce the analyses
 
-- **`.xlsx` uploads go live immediately** — they replace the matching required workbook, and "Run All Analyses" trains on the new data right away.
-- **`.xls`/`.csv` uploads are saved but not auto-converted yet** — they're staged in `Temperature sensors data - split sheets/_pending_uploads/` for manual conversion to `.xlsx` before they can be used. See [Roadmap](#roadmap--whats-next).
+### 1. Sensor pipeline
 
-You can also update datasets the manual way: replace the six `.xlsx` files in `Temperature sensors data - split sheets/` directly, keeping the same filenames and the sheet format described in the scripts (IdentiCool/Wireless: 30C data in columns A:B, 37C data in columns F:G; Thermocouple: a `Time` column plus the four numeric probe columns), then rerun the scripts.
+From the repository root, run these stages in order, or select **Run All Analyses** in the dashboard:
 
-## Viewing results
-
-Each result folder contains:
-
-- `summary.txt` or `comparison_summary.txt` with the main model results.
-- `.csv` files containing cleaned aligned data and model metrics.
-- `.png` plots showing correlations, aligned temperature trends, and model prediction results.
-
-Important comparison outputs:
-
-```text
-Temperature sensors data - split sheets/thermocouple_relationship_comparison/comparison_summary.txt
-Temperature sensors data - split sheets/thermocouple_relationship_comparison/best_relationship_by_temperature.csv
-Temperature sensors data - split sheets/thermocouple_relationship_comparison/best_model_r2_comparison.png
-Temperature sensors data - split sheets/thermocouple_relationship_comparison/best_model_pearson_comparison.png
-Temperature sensors data - split sheets/lagged_thermocouple_wireless_results/summary.txt
-Temperature sensors data - split sheets/exponential_thermal_model_results/summary.txt
+```bash
+cd "Temperature sensors data - split sheets"
+python analyze_sensor_correlations.py
+python analyze_thermocouple_identicool_correlations.py
+python analyze_thermocouple_wireless_correlations.py
+python compare_thermocouple_relationships.py
+python analyze_lagged_thermocouple_wireless.py
+python analyze_exponential_thermal_models.py
+cd ..
 ```
 
-## Current findings
+Each stage writes CSV metrics, PNG plots, and text summaries to its corresponding result folder. The comparison stage depends on the preceding pairwise analyses.
 
-**Same-instant comparison:** Thermocouple vs IdentiCool is more reliable than Thermocouple vs Wireless at both 30C and 37C.
+### 2. Pallet pipeline
 
-- 30C: Thermocouple vs IdentiCool using Ridge Regression (R&sup2; = 0.434, Pearson r = 0.703).
-- 37C: Thermocouple vs IdentiCool using SVR (R&sup2; = 0.695, Pearson r = 0.865).
-- Same-instant Thermocouple vs Wireless is much weaker (R&sup2; = 0.042 at 30C, 0.484 at 37C).
+From the repository root:
 
-**With a time lag, the picture changes.** Ambient heat takes time to reach core temperature. Re-testing Thermocouple vs Wireless using the wireless reading from 10/20/30 minutes earlier (instead of the same instant) beats IdentiCool outright:
+```bash
+python "New folder/clean_state_space_data.py"
+python "New folder/clean_monte_carlo_data.py"
+python "New folder/analyze_state_space_summaries.py"
+python "New folder/analyze_monte_carlo_summaries.py"
+python "New folder/analyze_state_space_vs_monte_carlo.py"
+```
 
-- 30C: Gradient Boosting, R&sup2; = 0.721, Pearson r = 0.850 (vs 0.434 for IdentiCool).
-- 37C: Gradient Boosting, R&sup2; = 0.827, Pearson r = 0.920 (vs 0.695 for IdentiCool) — the strongest result in the whole study.
+Outputs are saved under `New folder/state_space_summary_results/`, `monte_carlo_summary_results/`, and `state_space_vs_monte_carlo_results/`.
 
-A physics-based sanity check (Newton's Law of Cooling) supports this at 37C (recursive R&sup2; = 0.752) but breaks down at 30C (recursive R&sup2; = &minus;3.681), so the lag-regression model is the more dependable option for now.
+### 3. Refresh the offline Atlas
 
-**Practical takeaway:** for an immediate same-instant reading, use IdentiCool. If a 10-30 minute delay is acceptable, the non-invasive wireless sensor becomes the single best predictor overall.
+After regenerating the pallet results:
 
-## Roadmap / what's next
+```bash
+python "pallet webpage/build_data.py"
+```
 
-- **Automatic upload validation** — check that an uploaded `.xlsx` actually matches the expected column layout before treating it as live data, instead of trusting the format silently.
-- **Automatic `.xls`/`.csv` conversion** — convert staged uploads into the required `.xlsx` layout automatically instead of requiring manual conversion.
-- **Per-script rerun** — rerun a single analysis stage from the dashboard instead of only all-or-nothing.
-- **Adjustable lag window** — expose the 10/20/30 minute lag choice as a control in the dashboard so different delays can be tested live, instead of being fixed in the script.
-- **Investigate the 30C physics-model divergence** — the Newton's Cooling model fails to generalize at 30C; likely a fitting/data-volume issue worth digging into.
-- **More 30C samples** — every pipeline scores lower at 30C than 37C; more data may close that gap.
+The builder audits source alignment before writing `data.js` and copying downloadable source snapshots. Reload the browser page afterward. This export reads existing results; it does not rerun the analyses.
+
+Optional browser interaction checks require Node.js, `playwright-core`, and an available Playwright Chromium installation:
+
+```bash
+node "pallet webpage/verify.cjs"
+```
+
+The checker also accepts an installed `playwright-core` module path as its first argument.
+
+## 📈 Results at a glance
+
+### Sensor modeling
+
+The saved analyses report these best model R² scores:
+
+| Relationship | 30°C | 37°C |
+| --- | ---: | ---: |
+| Same-instant Thermocouple vs IdentiCool | 0.434 | 0.695 |
+| Same-instant Thermocouple vs Wireless | 0.042 | 0.484 |
+| Lagged Thermocouple vs Wireless | 0.721 | 0.827 |
+
+IdentiCool provides the stronger same-instant relationship in these datasets. Adding earlier wireless readings improves the reported predictive fit, consistent with delayed thermal response. These results support further validation of lagged wireless estimation; they do not establish universal sensor interchangeability.
+
+The recursive physics model reports R² = 0.752 at 37°C and −3.681 at 30°C, indicating poor generalization for the latter condition. Detailed metrics and plots are available in the sensor result folders.
+
+### Pallet data coverage
+
+- **20 boxes across four layers**, with observed summaries from hour 0 to 24 in two-hour increments.
+- **1,170 observed readings** forming **260 box-hour summaries**.
+- **50,000 saved simulation values**, with **500 simulations per box-hour** at hours 0, 6, 12, 18, and 24.
+- Source audits check readings, simulation values, summary statistics, first crossings, and coordinates used in the heat maps.
+
+## 🧭 Interpretation & known limits
+
+- Pallet “risk” means the percentage of simulated values **≥ 4**. It is not a validated probability of spoilage. The pallet source unit is unconfirmed, so the Atlas does not label those values as Celsius.
+- Simulation percentile intervals describe simulated values, not confidence intervals for an estimated mean. Simulations centered on observed averages do not provide independent validation.
+- First observed crossing refers to any available trial reaching the threshold; the box mean may still be below it.
+- Box centers use source coordinates in inches. Box dimensions and pallet geometry are inferred for visualization, not verified engineering dimensions.
+- Recorded exposure counts for **L2B7** and **L2B9** differ from the nominal layout and remain flagged. A bottom boundary does not establish air exposure.
+
+## 📥 Updating sensor data
+
+Use **Upload Data** in the dashboard for the six sensor slots: IdentiCool 1/2, Thermocouple 30C/37C, and Wireless 1/2.
+
+- `.xlsx` uploads replace the matching source workbook immediately.
+- `.xls` and `.csv` uploads are staged in `Temperature sensors data - split sheets/_pending_uploads/` and require manual conversion before analysis.
+- Preserve the expected workbook layout: IdentiCool/Wireless use columns A:B for 30°C and F:G for 37°C; Thermocouple inputs use a `Time` column and four numeric probe columns. Consult the readers in the analysis scripts for exact parsing requirements.
+
+After replacing inputs, rerun the sensor analyses to update the dashboard results.
+
+## 🛠️ Technology & skills demonstrated
+
+**Data engineering:** Excel ingestion, cleaning, time alignment, CSV exports, and source traceability.
+**Modeling:** regression comparison, correlation metrics, lagged features, thermal response, and Monte Carlo summary analysis.
+**Visualization:** Matplotlib charts, HTML presentations, interactive canvas projection, and linked data views.
+**Application development:** Python HTTP services, JavaScript interfaces, offline data packaging, and automated source checks.
+
+## 🗺️ Next steps
+
+- Validate uploaded workbook layouts and automate staged file conversion.
+- Add individual analysis reruns and configurable lag windows.
+- Investigate the 30°C thermal-model divergence and expand validation datasets.
+- Confirm pallet measurement units, stacking geometry, and exposure definitions.

@@ -1,0 +1,9 @@
+layer_4_hour24_risk_agreement_map.png
+
+Data used: `hour24_observed_vs_monte_carlo_ranking.csv`, filtered to Layer 4 at hour 24.
+
+What it shows: Layer 4 spatial agreement between observed and simulated risk.
+
+How to read it: red indicates consistent risk across both methods, highlighting the most dependable hotspots.
+
+Main result: L4B18 and L4B20 are key Layer 4 risk positions in both observed and Monte Carlo results.

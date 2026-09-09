@@ -1,0 +1,9 @@
+monte_carlo_layer_risk_trends.png
+
+Data used: `monte_carlo_layer_hour_summary.csv`, specifically the percentage of simulations where `simulated_value >= 4`.
+
+What it shows: risk of loss percentage over time for each layer.
+
+How to read it: 0% means no simulations crossed the threshold; 100% means every simulation crossed it.
+
+Main result: Layer 1 becomes risky earliest and reaches very high risk by hours 18-24. Layer 4 rises later but becomes high risk by hour 24. Layer 3 remains the lowest-risk layer.

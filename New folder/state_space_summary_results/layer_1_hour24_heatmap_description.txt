@@ -1,0 +1,9 @@
+layer_1_hour24_heatmap.png
+
+Data used: `box_hour_summary.csv`, filtered to Layer 1 and hour 24. Each plotted point is one box position using its `x_inches` and `y_inches` coordinates.
+
+What it shows: a top-down spatial heat map for Layer 1 at hour 24. Color represents the box's mean hour-24 value across available trials, and each marker is labeled with its box ID.
+
+How to read it: warmer/redder points are higher final values; cooler/bluer points are lower final values. Because all Layer 1 boxes are high, the map mainly shows which top-layer positions are highest among already-risky boxes.
+
+Main result: all Layer 1 boxes are elevated at hour 24, with `L1B3` and `L1B5` slightly highest.

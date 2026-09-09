@@ -1,0 +1,9 @@
+monte_carlo_hour24_box_risk_ranking.png
+
+Data used: `monte_carlo_hour24_box_risk_ranking.csv`, using each box's Monte Carlo risk percentage at hour 24.
+
+What it shows: a horizontal bar chart ranking all boxes by probability of loss at hour 24. Bar colors identify the layer.
+
+How to read it: boxes with bars closer to 100% are almost always above the threshold in simulation and should be treated as high-risk positions.
+
+Main result: Layer 1 boxes are the dominant high-risk group. `L4B18`, `L4B20`, and `L2B6` are also important non-Layer-1 hotspots.

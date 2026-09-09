@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f6f2">
+  <title>Pallet Atlas — Temperature exploration</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="data.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="./index.html" aria-label="Pallet Atlas home"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="m16 3 12 7v12l-12 7L4 22V10Z M4 10l12 7 12-7 M16 17v12 M10 6.5l12 7v12"/></svg></span><span>Pallet<span class="brand-light">Atlas</span></span></a>
+    <span class="header-divider"></span><span class="header-subtitle">TEMPERATURE INTELLIGENCE</span>
+    <div class="header-status"><span class="status-dot"></span> Local dataset <span class="status-separator">/</span> 24-hour study</div>
+  </header>
+
+  <main>
+    <nav class="page-nav" aria-label="Pages"><a href="index.html" aria-current="page">3D explorer</a><a href="analysis-data.html">Data &amp; alignment</a></nav>
+    <section class="page-heading">
+      <div><p class="eyebrow">SPATIAL ANALYSIS <span>/</span> PALLET 01</p><h1>A new perspective on every box.</h1><p class="page-description">Explore the pallet in 3D. Select a box to see how its values change over time.</p></div>
+      <div class="study-summary"><div><strong>20</strong><span>boxes</span></div><div><strong>4</strong><span>layers</span></div><div><strong>24<span>h</span></strong><span>observation</span></div></div>
+    </section>
+
+    <div class="workspace">
+      <section class="visual-panel panel" aria-labelledby="pallet-heading">
+        <div class="panel-heading"><div><p class="eyebrow">EXPLORE</p><h2 id="pallet-heading">The whole pallet</h2></div><span class="view-badge"><span></span> INTERACTIVE 3D</span></div>
+        <div class="viewer-toolbar">
+          <div class="segmented layer-tabs" role="group" aria-label="Visible layer"><button class="active" data-layer="all" aria-pressed="true">All layers</button><button data-layer="1" aria-pressed="false">L1</button><button data-layer="2" aria-pressed="false">L2</button><button data-layer="3" aria-pressed="false">L3</button><button data-layer="4" aria-pressed="false">L4</button></div>
+          <button class="text-button" id="reset-view" title="Reset rotation and zoom"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7a6 6 0 1 1-.4 5M4 3v4h4"/></svg>Reset view</button>
+        </div>
+        <div class="canvas-wrap" id="canvas-wrap">
+          <canvas id="pallet-canvas" tabindex="0" aria-label="Interactive 3D pallet. Drag to rotate, scroll to zoom, and click a box to view its report. With keyboard focus, use arrow keys to rotate and plus or minus to zoom. All boxes are also available in the box selector below."></canvas>
+          <div class="viewer-corner"><span class="orientation-mark" aria-hidden="true">↗</span><span>48 × 40 in<span>Approximate pallet footprint</span></span></div>
+          <div class="zoom-controls" role="group" aria-label="Camera controls"><button id="zoom-in" aria-label="Zoom in" title="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out" title="Zoom out">−</button></div>
+          <div id="hover-tip" class="hover-tip" hidden></div>
+          <div class="canvas-hint"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 6-3 3 3 3M15 6l3 3-3 3M2 9h16M7 15h6"/></svg>Drag to rotate 360°<span>·</span> Scroll to zoom <span>·</span> Click to inspect</div>
+        </div>
+        <div class="view-options"><label class="explode-control" for="explode-slider"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m2 6 8-4 8 4-8 4ZM2 10l8 4 8-4M2 14l8 4 8-4"/></svg>Separate layers<input type="range" id="explode-slider" min="0" max="12" value="0" step="0.2"><output id="explode-value" for="explode-slider">0%</output></label><span class="geometry-note" title="Box centers come from the source data. Footprints and box heights are inferred from their spacing.">Geometry inferred from box centers <span aria-hidden="true">ⓘ</span></span></div>
+        <div class="timeline-section"><div class="section-label"><span>OBSERVATION TIME</span><span id="time-caption">Hour 24 of 24</span></div><div class="time-row"><button id="play-time" class="play-button" aria-label="Play time sequence" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 9 6-9 6Z"/></svg></button><div class="time-stops" role="group" aria-label="Observation hour"><button data-hour="0" aria-pressed="false">0<span>h</span></button><button data-hour="6" aria-pressed="false">6<span>h</span></button><button data-hour="12" aria-pressed="false">12<span>h</span></button><button data-hour="18" aria-pressed="false">18<span>h</span></button><button data-hour="24" class="active" aria-pressed="true">24<span>h</span></button></div></div></div>
+        <div class="legend"><span>Simulated exceedance <strong>value ≥ 4</strong></span><div class="legend-scale"><span>0%</span><i></i><span>100%</span></div></div>
+      </section>
+
+      <aside class="report-panel panel" aria-labelledby="report-heading">
+        <div class="report-top"><p class="eyebrow">BOX INSIGHT</p><span class="report-index" id="report-index">01 / 20</span></div>
+        <div class="box-title-row"><div><h2 id="report-heading">Box 01</h2><p id="box-location">L1B1 · Layer 1 · Top layer</p></div><span class="box-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="m16 4 11 6v13l-11 6-11-6V10Z M5 10l11 6 11-6M16 16v13M10 7l11 6v5"/></svg></span></div>
+        <div class="risk-banner" id="risk-banner"><div><span class="risk-dot"></span><strong id="risk-label">Higher exceedance</strong></div><span id="report-time">AT HOUR 24</span></div>
+        <div class="metric-grid"><div class="metric"><span>Observed mean</span><strong id="observed-mean">—</strong><small>measured value</small></div><div class="metric"><span>Simulated exceedance</span><strong id="risk-percent">—</strong><small>samples with value ≥ 4</small></div></div>
+        <section class="trend-section" aria-labelledby="trend-heading"><div class="section-label"><h3 id="trend-heading">Value over time</h3><span>0–24 HOURS</span></div><div id="trend-chart" class="trend-chart"></div><div class="chart-legend"><span><i class="observed-line"></i>Observed</span><span><i class="simulated-line"></i>Simulated</span><span><i class="band-key"></i>5th–95th percentile</span></div></section>
+        <section class="detail-section" aria-labelledby="snapshot-heading"><div class="section-label"><h3 id="snapshot-heading">At a glance</h3><span id="snapshot-hour">HOUR 24</span></div><dl class="detail-list"><div><dt>Observed range</dt><dd id="observed-range">—</dd></div><div><dt>Simulation 5th–95th percentile</dt><dd id="simulation-interval">—</dd></div><div><dt>Change from hour 0</dt><dd id="value-change">—</dd></div><div><dt>First observed trial ≥ 4</dt><dd id="first-crossing">—</dd></div><div><dt>Exposed surfaces</dt><dd id="exposed-surfaces">—</dd></div><div><dt>Samples at this hour</dt><dd id="sample-count">—</dd></div></dl></section>
+        <div class="alignment-note" id="alignment-note"></div>
+        <a class="data-link" id="box-data-link" href="analysis-data.html">View this box’s data &amp; alignment →</a>
+        <div class="insight-note"><span aria-hidden="true">↗</span><p id="box-narrative"></p></div>
+      </aside>
+    </div>
+
+    <section class="box-directory panel" aria-labelledby="directory-heading"><div class="directory-heading"><div><p class="eyebrow">QUICK SELECT</p><h2 id="directory-heading">Find your box</h2></div><p>Every layer, including the boxes hidden from view.</p></div><div class="directory-layers" id="box-directory"></div></section>
+    <footer><p><strong>About this view.</strong> Observed values and Monte Carlo summaries from the local pallet study. Color shows the percentage of simulated samples ≥ 4, not spoilage probability. Measurement units are unconfirmed.</p><p>Box centers follow the source coordinates; box dimensions are inferred. Simulations were centered on observed means and are not an independent prediction. <span class="footer-brand">PALLET ATLAS <span>·</span> LOCAL EXPLORER</span></p></footer>
+  </main>
+  <div class="sr-only" id="selection-announcement" aria-live="polite"></div>
+</body>
+</html>

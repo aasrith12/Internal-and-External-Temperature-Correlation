@@ -1,0 +1,9 @@
+layer_2_hour24_heatmap.png
+
+Data used: `box_hour_summary.csv`, filtered to Layer 2 and hour 24. Coordinates come from the state-space workbook.
+
+What it shows: a top-down spatial heat map for Layer 2 at hour 24, with marker color showing each box's mean final value.
+
+How to read it: compare marker colors and labels to see which Layer 2 positions are heating/lossing more than others.
+
+Main result: `L2B6` is the clear Layer 2 hotspot. The other Layer 2 boxes are lower, with `L2B7` and `L2B10` among the safer positions.

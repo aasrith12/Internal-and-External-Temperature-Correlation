@@ -1,0 +1,9 @@
+hour24_monte_carlo_mean_difference_by_box.png
+
+Data used: `hour24_observed_vs_monte_carlo_ranking.csv`, using `Monte Carlo mean - observed mean` for each box at hour 24.
+
+What it shows: whether Monte Carlo overestimates or underestimates each box's observed hour-24 mean.
+
+How to read it: bars to the right of zero mean Monte Carlo is higher than observed. Bars to the left mean Monte Carlo is lower than observed.
+
+Main result: differences are generally small because the Monte Carlo means were generated around the observed averages, but this plot identifies boxes with the largest deviations.

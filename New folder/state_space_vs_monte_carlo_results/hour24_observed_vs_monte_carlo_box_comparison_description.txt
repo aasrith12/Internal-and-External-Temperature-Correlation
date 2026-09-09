@@ -1,0 +1,9 @@
+hour24_observed_vs_monte_carlo_box_comparison.png
+
+Data used: `hour24_observed_vs_monte_carlo_ranking.csv`, filtered to hour 24.
+
+What it shows: blue bars are observed hour-24 means by box; red points are Monte Carlo hour-24 means for the same boxes. The dashed line is the risk threshold.
+
+How to read it: when the red point sits close to the end of the blue bar, Monte Carlo agrees with observed data. Values right of the threshold are risky.
+
+Main result: the highest observed boxes are also high in Monte Carlo, especially Layer 1 boxes and key Layer 4/Layer 2 hotspots.

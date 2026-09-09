@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pallet Temperature Risk Analysis - Results</title>
+<style>
+  :root{
+    --surface-1:#fcfcfb;
+    --page:#f9f9f7;
+    --text-primary:#0b0b0b;
+    --text-secondary:#52514e;
+    --muted:#898781;
+    --gridline:#e1e0d9;
+    --border:rgba(11,11,11,0.10);
+    --blue:#2a78d6;
+    --aqua:#1baf7a;
+    --yellow:#eda100;
+    --green:#008300;
+    --violet:#4a3aa7;
+    --red:#e34948;
+    --orange:#eb6834;
+    --good:#0ca30c;
+    --critical:#d03b3b;
+    --winbg:#eaf6ea;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--page);
+    color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  .deck{ position:relative; width:100%; height:100vh; overflow:hidden; }
+  .slide{
+    display:none;
+    position:absolute; inset:0;
+    padding:28px 60px 68px 60px;
+    flex-direction:column;
+    overflow:auto;
+  }
+  .slide.active{ display:flex; }
+  .kicker{
+    display:inline-block;
+    font-size:12.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:#fff; background:var(--blue);
+    padding:4px 12px; border-radius:20px; margin-bottom:10px; width:fit-content;
+  }
+  .kicker.aqua{background:var(--aqua);}
+  .kicker.yellow{background:var(--yellow);}
+  .kicker.violet{background:var(--violet);}
+  .kicker.good{background:var(--good);}
+  .kicker.critical{background:var(--critical);}
+  .kicker.orange{background:var(--orange);}
+  .kicker.muted{background:var(--muted);}
+  h1{ font-size:42px; margin:0 0 6px 0; }
+  h2{ font-size:27px; margin:0 0 4px 0; }
+  h3{ font-size:18px; margin:0 0 6px 0; }
+  .subtitle{ font-size:16.5px; color:var(--text-secondary); margin:0 0 16px 0; max-width:1080px; }
+  .body{ flex:1; display:flex; flex-direction:column; gap:12px; min-height:0; }
+  .lead{ font-size:18px; color:var(--text-secondary); max-width:1050px; line-height:1.55; }
+  .verdict{
+    font-size:14.5px; font-weight:600; color:var(--text-primary);
+    background:var(--surface-1); border:1px solid var(--border); border-left:6px solid var(--good);
+    border-radius:10px; padding:10px 16px; max-width:1200px; flex:0 0 auto;
+  }
+  .verdict.warn{ border-left-color:var(--critical); }
+  .verdict.info{ border-left-color:var(--blue); font-weight:500; }
+  .verdict.orange{ border-left-color:var(--orange); }
+  .stat-row{ display:flex; gap:16px; flex-wrap:wrap; flex:0 0 auto; }
+  .stat-tile{
+    background:var(--surface-1); border:1px solid var(--border); border-radius:10px;
+    padding:14px 18px; min-width:160px; border-top:4px solid var(--blue);
+  }
+  .stat-tile.aqua{ border-top-color:var(--aqua); }
+  .stat-tile.yellow{ border-top-color:var(--yellow); }
+  .stat-tile.violet{ border-top-color:var(--violet); }
+  .stat-tile.good{ border-top-color:var(--good); }
+  .stat-tile.critical{ border-top-color:var(--critical); }
+  .stat-tile.orange{ border-top-color:var(--orange); }
+  .stat-value{ font-size:30px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; }
+  .stat-label{ font-size:12.5px; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:.04em; }
+  .img-row{ display:flex; gap:18px; align-items:stretch; flex:1; min-height:0; }
+  .img-col{ flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; min-height:0; }
+  .img-col img{
+    flex:1 1 auto; min-height:0; width:100%; object-fit:contain; background:var(--surface-1);
+    border:1px solid var(--border); border-radius:8px;
+  }
+  .caption{ font-size:12.5px; color:var(--muted); flex:0 0 auto; }
+  .desc{
+    background:var(--surface-1); border:1px solid var(--border); border-radius:10px;
+    padding:12px 14px; font-size:13.5px; color:var(--text-secondary); line-height:1.45;
+  }
+  .desc strong{ color:var(--text-primary); }
+  table{ border-collapse:collapse; width:100%; font-size:14px; flex:0 0 auto; background:var(--surface-1); }
+  th,td{ text-align:left; padding:7px 11px; border-bottom:1px solid var(--gridline); font-variant-numeric:tabular-nums; }
+  th{ color:var(--muted); text-transform:uppercase; font-size:11px; letter-spacing:.04em; font-weight:700; }
+  td.best{ color:var(--good); font-weight:700; }
+  td.weak{ color:var(--critical); font-weight:700; }
+  ul.clean, ol.clean{ margin:0; padding-left:22px; font-size:16.5px; color:var(--text-secondary); line-height:1.65; }
+  ul.clean li, ol.clean li{ margin-bottom:5px; }
+  ul.clean li strong, ol.clean li strong{ color:var(--text-primary); }
+  .cols2{ display:flex; gap:24px; flex:1; min-height:0; }
+  .cols2 > div{ flex:1; min-width:0; }
+  .appendix-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 40px; }
+  .appendix-grid h3{ font-size:15px; margin:0 0 4px 0; color:var(--blue); }
+  .appendix-grid p{ font-size:13.5px; color:var(--text-secondary); margin:0 0 10px 0; }
+  code{ background:rgba(11,11,11,0.06); padding:1px 5px; border-radius:4px; font-size:12.5px; }
+  .progress{ position:fixed; left:0; bottom:0; height:4px; background:var(--blue); width:0%; transition:width .2s; z-index:20; }
+  .navbar{
+    position:fixed; right:24px; bottom:18px; display:flex; align-items:center; gap:10px;
+    background:rgba(252,252,251,0.94); border:1px solid var(--border); border-radius:30px; padding:7px 12px;
+    font-size:13px; color:var(--text-secondary); z-index:20; backdrop-filter:blur(4px);
+  }
+  .navbar button{
+    border:none; background:var(--text-primary); color:#fff; width:30px; height:30px; border-radius:50%;
+    cursor:pointer; font-size:15px; line-height:1;
+  }
+  .navbar button:hover{ background:var(--blue); }
+  .navbar .count{ min-width:52px; text-align:center; font-variant-numeric:tabular-nums; }
+  .navbar .fs{ border-radius:16px; width:auto; padding:0 12px; height:30px; font-size:12.5px; }
+  @media print{
+    .slide{ display:flex !important; position:relative; height:100vh; page-break-after:always; }
+    .navbar, .progress{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <section class="slide active">
+    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; max-width:1120px;">
+      <div class="kicker">Pallet temperature risk - work completed</div>
+      <h1 style="font-size:52px;">Chicken Box Pallet Temperature and Risk Analysis</h1>
+      <p class="subtitle" style="font-size:20px;">A simple walkthrough of the state-space data, Monte Carlo simulations, generated summaries, and what the results currently tell us.</p>
+      <div class="stat-row" style="margin-top:20px;">
+        <div class="stat-tile"><div class="stat-value">20</div><div class="stat-label">Boxes on pallet</div></div>
+        <div class="stat-tile aqua"><div class="stat-value">4</div><div class="stat-label">Stacked layers</div></div>
+        <div class="stat-tile yellow"><div class="stat-value">13</div><div class="stat-label">Observed time points</div></div>
+        <div class="stat-tile violet"><div class="stat-value">50k</div><div class="stat-label">Monte Carlo rows</div></div>
+      </div>
+      <p style="margin-top:34px; color:var(--muted); font-size:14px;">Prepared from files in <code>New folder/</code></p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker muted">Goal</div>
+    <h2>What question are we answering?</h2>
+    <div class="body" style="justify-content:center;">
+      <p class="lead" style="font-size:24px; color:var(--text-primary); font-weight:600;">If a pallet of chicken boxes is stacked in layers, which positions become risky first, which layers are most vulnerable, and how much uncertainty is there around that risk?</p>
+      <ul class="clean">
+        <li><strong>Observed state-space data</strong> tells what happened in the measured trials.</li>
+        <li><strong>Monte Carlo simulation data</strong> tells how much the result can vary under uncertainty.</li>
+        <li><strong>Risk threshold</strong> used so far is <code>value >= 4</code>.</li>
+        <li><strong>Practical output</strong> is a ranked list of risky layers, risky boxes, and when risk begins.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">Data structure</div>
+    <h2>How the pallet data is organized</h2>
+    <div class="body">
+      <table>
+        <tr><th>Data source</th><th>What it contains</th><th>Cleaned output</th></tr>
+        <tr><td>State-space Model Data.xlsx</td><td>Observed values for 20 boxes every 2 hours from hour 0 to hour 24, with coordinates and exposed-surface count.</td><td><code>state_space_combined_clean.csv</code></td></tr>
+        <tr><td>Monte Carlo Method Layer 1-4.xlsx</td><td>500 simulated values per box-hour at hours 0, 6, 12, 18, and 24.</td><td><code>monte_carlo_combined_clean.csv</code></td></tr>
+        <tr><td>Risk Loss Tables All 6 Trials.docx</td><td>Risk/loss percentages by box and hour, useful as a reporting reference.</td><td>Read and compared manually during inspection.</td></tr>
+      </table>
+      <div class="verdict info">The raw files were transformed into clean, row-based CSV files so every downstream chart and summary can be regenerated consistently.</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker aqua">Cleaning step 1</div>
+    <h2>Clean observed state-space dataset</h2>
+    <div class="body">
+      <div class="stat-row">
+        <div class="stat-tile"><div class="stat-value">1,170</div><div class="stat-label">Clean observations</div></div>
+        <div class="stat-tile aqua"><div class="stat-value">20</div><div class="stat-label">Boxes</div></div>
+        <div class="stat-tile yellow"><div class="stat-value">0-24</div><div class="stat-label">Hours covered</div></div>
+        <div class="stat-tile violet"><div class="stat-value">130</div><div class="stat-label">Missing cells skipped</div></div>
+      </div>
+      <table>
+        <tr><th>Column</th><th>Meaning</th></tr>
+        <tr><td><code>hour</code></td><td>Time since start of the pallet trial.</td></tr>
+        <tr><td><code>box_id</code>, <code>layer</code>, <code>box_number</code></td><td>Box identity and layer position in the pallet.</td></tr>
+        <tr><td><code>trial</code>, <code>value</code></td><td>Measured trial name and observed temperature/loss value.</td></tr>
+        <tr><td><code>x_inches</code>, <code>y_inches</code>, <code>z_inches</code></td><td>Physical box coordinates in the pallet.</td></tr>
+        <tr><td><code>exposed_surfaces</code></td><td>Number of box surfaces exposed to outside conditions.</td></tr>
+      </table>
+      <div class="verdict">This created the foundation for all observed-data summaries and state-space plots.</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker aqua">Observed result</div>
+    <h2>Layer mean trend from observed state-space data</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col">
+          <img src="New folder/state_space_summary_results/layer_mean_trends.png" alt="State-space layer mean trends">
+        </div>
+        <div class="img-col" style="flex:.82;">
+          <div class="desc"><strong>Data used:</strong> <code>layer_hour_summary.csv</code>, generated by averaging all observed trial values for each layer at each hour.</div>
+          <div class="desc"><strong>What it shows:</strong> mean observed value over time for Layers 1-4. The dashed line marks the risk threshold of 4.</div>
+          <div class="desc"><strong>How to read it:</strong> the higher the line, the greater the measured temperature/loss value. A layer crossing the dashed line has entered the risk zone on average.</div>
+          <div class="verdict"><strong>Main result:</strong> Layer 1 rises fastest and is highest by hour 24. Layer 4 becomes the second-highest layer. Layer 3 remains safest overall.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker aqua">Observed result</div>
+    <h2>Observed box ranking at hour 24</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col">
+          <img src="New folder/state_space_summary_results/hour24_box_ranking.png" alt="Observed hour 24 box ranking">
+        </div>
+        <div class="img-col" style="flex:.82;">
+          <div class="desc"><strong>Data used:</strong> <code>box_summary_ranked.csv</code>, specifically each box's mean value at hour 24 across available trials.</div>
+          <div class="desc"><strong>What it shows:</strong> a horizontal ranking of all boxes by final mean value. Bar color identifies layer. The dashed line is the threshold of 4.</div>
+          <div class="desc"><strong>How to read it:</strong> boxes farther to the right are more concerning. Bars crossing the dashed line are above the selected risk threshold.</div>
+          <div class="verdict"><strong>Main result:</strong> Layer 1 boxes dominate the top of the ranking: L1B3, L1B5, L1B4, L1B2, and L1B1. L4B18, L4B20, and L2B6 are also important hotspots.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker aqua">Observed result</div>
+    <h2>Observed risk over time by layer</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col">
+          <img src="New folder/state_space_summary_results/layer_risk_trends.png" alt="Observed layer risk trends">
+        </div>
+        <div class="img-col" style="flex:.82;">
+          <div class="desc"><strong>Data used:</strong> <code>layer_hour_risk_summary.csv</code>, where every observation is marked risky if <code>value >= 4</code>.</div>
+          <div class="desc"><strong>What it shows:</strong> the percentage of risky observations in each layer at every observed hour.</div>
+          <div class="desc"><strong>How to read it:</strong> 100% means every available observation in that layer and hour is above threshold. 0% means no observations crossed it.</div>
+          <div class="verdict"><strong>Main result:</strong> Layer 1 enters risk earliest. Layer 4 starts lower but becomes strongly risky by the end. Layers 2 and 3 remain lower, with Layer 3 lowest.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker aqua">Observed spatial maps</div>
+    <h2>Observed hour-24 heat maps by layer</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col"><img src="New folder/state_space_summary_results/layer_1_hour24_heatmap.png" alt="Layer 1 observed heat map"><div class="caption">Layer 1: all boxes elevated; L1B3 and L1B5 slightly highest.</div></div>
+        <div class="img-col"><img src="New folder/state_space_summary_results/layer_2_hour24_heatmap.png" alt="Layer 2 observed heat map"><div class="caption">Layer 2: L2B6 is the main hotspot.</div></div>
+      </div>
+      <div class="img-row">
+        <div class="img-col"><img src="New folder/state_space_summary_results/layer_3_hour24_heatmap.png" alt="Layer 3 observed heat map"><div class="caption">Layer 3: lowest-risk layer overall; L3B13 is the main hotspot.</div></div>
+        <div class="img-col"><img src="New folder/state_space_summary_results/layer_4_hour24_heatmap.png" alt="Layer 4 observed heat map"><div class="caption">Layer 4: L4B18 is highest, followed by L4B20 and L4B17.</div></div>
+      </div>
+      <div class="verdict info">Each map uses the box X/Y coordinates and colors each position by its hour-24 observed mean value.</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker yellow">Observed summary</div>
+    <h2>What the state-space data says so far</h2>
+    <div class="body">
+      <table>
+        <tr><th>Rank</th><th>Layer</th><th>Hour-24 mean</th><th>Change from hour 0 to 24</th><th>Interpretation</th></tr>
+        <tr><td>1</td><td class="best">Layer 1</td><td class="best">7.42</td><td>7.58</td><td>Highest and fastest-rising layer.</td></tr>
+        <tr><td>2</td><td>Layer 4</td><td>5.33</td><td>5.73</td><td>Second-highest by the end.</td></tr>
+        <tr><td>3</td><td>Layer 2</td><td>3.76</td><td>4.63</td><td>Mixed layer; L2B6 is a clear hotspot.</td></tr>
+        <tr><td>4</td><td>Layer 3</td><td class="weak">2.62</td><td>3.28</td><td>Lowest overall risk.</td></tr>
+      </table>
+      <div class="verdict">The observed data points to a strong layer effect: Layer 1 is the main risk area, Layer 4 is the next concern, and Layer 3 is the safest region of the pallet.</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker violet">Cleaning step 2</div>
+    <h2>Clean combined Monte Carlo dataset</h2>
+    <div class="body">
+      <div class="stat-row">
+        <div class="stat-tile"><div class="stat-value">50,000</div><div class="stat-label">Simulation rows</div></div>
+        <div class="stat-tile aqua"><div class="stat-value">500</div><div class="stat-label">Simulations per box-hour</div></div>
+        <div class="stat-tile yellow"><div class="stat-value">5</div><div class="stat-label">Simulation hours</div></div>
+        <div class="stat-tile violet"><div class="stat-value">20</div><div class="stat-label">Boxes represented</div></div>
+      </div>
+      <table>
+        <tr><th>Column</th><th>Meaning</th></tr>
+        <tr><td><code>simulated_value</code></td><td>One Monte Carlo sampled value for a box at a specific hour.</td></tr>
+        <tr><td><code>is_risky</code></td><td>True when simulated value is greater than or equal to 4.</td></tr>
+        <tr><td><code>risk_of_loss_percent</code></td><td>The workbook's risk percentage for that box-hour.</td></tr>
+        <tr><td><code>monte_carlo_mean</code>, <code>p95</code> summaries</td><td>Used to understand uncertainty, not only average behavior.</td></tr>
+      </table>
+      <div class="verdict info">The calculated risk percentage from the 500 rows matched the workbook risk row exactly, aside from tiny floating-point noise.</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker violet">Monte Carlo result</div>
+    <h2>Monte Carlo layer mean trend</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col">
+          <img src="New folder/monte_carlo_summary_results/monte_carlo_layer_mean_trends.png" alt="Monte Carlo layer mean trends">
+        </div>
+        <div class="img-col" style="flex:.82;">
+          <div class="desc"><strong>Data used:</strong> <code>monte_carlo_layer_hour_summary.csv</code>, averaging all 500 simulations per box-hour and aggregating by layer and hour.</div>
+          <div class="desc"><strong>What it shows:</strong> mean simulated value over time for Layers 1-4. The dashed line marks the threshold of 4.</div>
+          <div class="desc"><strong>How to read it:</strong> higher lines mean higher simulated temperature/loss values. Crossing the dashed line means the simulated layer average is risky.</div>
+          <div class="verdict"><strong>Main result:</strong> Monte Carlo confirms the observed pattern: Layer 1 is highest, Layer 4 is second by hour 24, and Layers 2 and 3 remain lower.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker violet">Monte Carlo result</div>
+    <h2>Monte Carlo risk trend by layer</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col">
+          <img src="New folder/monte_carlo_summary_results/monte_carlo_layer_risk_trends.png" alt="Monte Carlo layer risk trends">
+        </div>
+        <div class="img-col" style="flex:.82;">
+          <div class="desc"><strong>Data used:</strong> <code>monte_carlo_layer_hour_summary.csv</code>, specifically the percentage of simulations where <code>simulated_value >= 4</code>.</div>
+          <div class="desc"><strong>What it shows:</strong> risk of loss percentage over time for each layer.</div>
+          <div class="desc"><strong>How to read it:</strong> 0% means no simulations crossed the threshold. 100% means every simulation crossed it.</div>
+          <div class="verdict"><strong>Main result:</strong> Layer 1 becomes risky earliest and reaches very high risk by hours 18-24. Layer 4 rises later but reaches high risk by hour 24.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker violet">Monte Carlo result</div>
+    <h2>Monte Carlo hour-24 box risk ranking</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col">
+          <img src="New folder/monte_carlo_summary_results/monte_carlo_hour24_box_risk_ranking.png" alt="Monte Carlo hour 24 box risk ranking">
+        </div>
+        <div class="img-col" style="flex:.82;">
+          <div class="desc"><strong>Data used:</strong> <code>monte_carlo_hour24_box_risk_ranking.csv</code>, using each box's Monte Carlo risk percentage at hour 24.</div>
+          <div class="desc"><strong>What it shows:</strong> a ranked probability-of-loss chart for every box at hour 24. Bar colors identify layers.</div>
+          <div class="desc"><strong>How to read it:</strong> bars near 100% are almost always above threshold in simulation and should be treated as high-risk positions.</div>
+          <div class="verdict"><strong>Main result:</strong> L1B2 and L1B5 reach 100% simulated risk. L1B1 is 99.8%. Important non-Layer-1 hotspots include L4B18, L4B20, and L2B6.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker violet">Monte Carlo result</div>
+    <h2>Hour-24 uncertainty by box</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col">
+          <img src="New folder/monte_carlo_summary_results/monte_carlo_hour24_box_uncertainty.png" alt="Monte Carlo hour 24 box uncertainty">
+        </div>
+        <div class="img-col" style="flex:.82;">
+          <div class="desc"><strong>Data used:</strong> <code>monte_carlo_hour24_box_risk_ranking.csv</code>, using each box's mean simulated value plus the 5th and 95th percentiles.</div>
+          <div class="desc"><strong>What it shows:</strong> each dot is the hour-24 simulated mean. The horizontal interval shows likely uncertainty from the 5th to 95th percentile. The dashed line is threshold 4.</div>
+          <div class="desc"><strong>How to read it:</strong> if the dot is right of the threshold, the average case is risky. If most of the interval is right of the threshold, the risk is robust.</div>
+          <div class="verdict"><strong>Main result:</strong> Layer 1 boxes sit clearly beyond the threshold. Several Layer 4 boxes also extend far into risky values, showing strong uncertainty but real concern.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker violet">Monte Carlo spatial maps</div>
+    <h2>Monte Carlo hour-24 risk heat maps by layer</h2>
+    <div class="body">
+      <div class="img-row">
+        <div class="img-col"><img src="New folder/monte_carlo_summary_results/monte_carlo_layer_1_hour24_risk_heatmap.png" alt="Layer 1 Monte Carlo risk heat map"><div class="caption">Layer 1: broadly high-risk at hour 24, with most positions near complete risk.</div></div>
+        <div class="img-col"><img src="New folder/monte_carlo_summary_results/monte_carlo_layer_2_hour24_risk_heatmap.png" alt="Layer 2 Monte Carlo risk heat map"><div class="caption">Layer 2: L2B6 is the main risk hotspot.</div></div>
+      </div>
+      <div class="img-row">
+        <div class="img-col"><img src="New folder/monte_carlo_summary_results/monte_carlo_layer_3_hour24_risk_heatmap.png" alt="Layer 3 Monte Carlo risk heat map"><div class="caption">Layer 3: safest overall; L3B13 is the main hotspot.</div></div>
+        <div class="img-col"><img src="New folder/monte_carlo_summary_results/monte_carlo_layer_4_hour24_risk_heatmap.png" alt="Layer 4 Monte Carlo risk heat map"><div class="caption">Layer 4: L4B18 and L4B20 lead risk, while L4B19 is lower.</div></div>
+      </div>
+      <div class="verdict info">Each map uses the same X/Y coordinates as the observed heat maps, but marker color now means simulated probability of loss at hour 24.</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker yellow">Monte Carlo summary</div>
+    <h2>Layer and box risk rankings</h2>
+    <div class="body">
+      <div class="cols2">
+        <div>
+          <h3>Layer ranking by hour-24 risk</h3>
+          <table>
+            <tr><th>Rank</th><th>Layer</th><th>Risk</th><th>Mean</th><th>95th percentile</th></tr>
+            <tr><td>1</td><td class="best">Layer 1</td><td class="best">94.4%</td><td>7.41</td><td>11.10</td></tr>
+            <tr><td>2</td><td>Layer 4</td><td>74.8%</td><td>5.33</td><td>8.79</td></tr>
+            <tr><td>3</td><td>Layer 2</td><td>42.7%</td><td>3.77</td><td>7.03</td></tr>
+            <tr><td>4</td><td>Layer 3</td><td class="weak">27.4%</td><td>2.63</td><td>7.18</td></tr>
+          </table>
+        </div>
+        <div>
+          <h3>Highest-risk boxes at hour 24</h3>
+          <table>
+            <tr><th>Box</th><th>Risk</th><th>Mean</th><th>95th percentile</th></tr>
+            <tr><td>L1B2</td><td class="best">100.0%</td><td>7.31</td><td>8.75</td></tr>
+            <tr><td>L1B5</td><td class="best">100.0%</td><td>7.57</td><td>8.41</td></tr>
+            <tr><td>L1B1</td><td>99.8%</td><td>7.26</td><td>8.94</td></tr>
+            <tr><td>L4B18</td><td>91.6%</td><td>6.81</td><td>9.94</td></tr>
+            <tr><td>L4B20</td><td>90.4%</td><td>5.77</td><td>7.96</td></tr>
+            <tr><td>L2B6</td><td>89.0%</td><td>5.76</td><td>8.08</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="verdict">Monte Carlo does not just repeat the average result. It confirms which positions are risky even after accounting for uncertainty.</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker good">Combined interpretation</div>
+    <h2>What we can confidently say right now</h2>
+    <div class="body">
+      <ol class="clean">
+        <li><strong>Layer 1 is the primary risk layer.</strong> It has the highest observed hour-24 mean and the highest Monte Carlo hour-24 risk.</li>
+        <li><strong>Layer 4 is the second major concern.</strong> It starts lower but becomes high-risk by hour 24, especially at boxes L4B18 and L4B20.</li>
+        <li><strong>Layer 3 is the safest layer overall.</strong> It has the lowest observed final mean and lowest Monte Carlo risk percentage.</li>
+        <li><strong>There are individual box hotspots outside Layer 1.</strong> L2B6 and L4B18 deserve attention even though their layers are not always highest overall.</li>
+        <li><strong>Risk is spatial, not only time-based.</strong> Coordinates, layer, and exposed surfaces all appear relevant to where heat/loss accumulates.</li>
+      </ol>
+      <div class="verdict">Operationally, the pallet should not be treated as one uniform block. Layer and box position matter.</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker orange">Open item</div>
+    <h2>What is not completed yet</h2>
+    <div class="body" style="justify-content:center;">
+      <p class="lead">The next planned analysis is a direct comparison between the observed state-space results and the Monte Carlo simulation results.</p>
+      <ul class="clean">
+        <li>Compare observed mean vs Monte Carlo mean for every box-hour.</li>
+        <li>Compare observed hour-24 ranking vs simulated risk ranking.</li>
+        <li>Identify where Monte Carlo overestimates or underestimates observed values.</li>
+        <li>Flag boxes that are consistently risky in both observed and simulated views.</li>
+      </ul>
+      <div class="verdict info">The needed files already exist: <code>state_space_combined_clean.csv</code> and <code>monte_carlo_combined_clean.csv</code>. This deck covers work completed up to, but not including, that comparison step.</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker good">Recommendation</div>
+    <h2>Recommended next work</h2>
+    <div class="body">
+      <ol class="clean">
+        <li><strong>Run state-space vs Monte Carlo comparison.</strong> This will show whether simulations are aligned with actual observed trial behavior.</li>
+        <li><strong>Build a combined pallet risk dashboard.</strong> Add observed trends, Monte Carlo risk, heat maps, and box rankings into one interactive view.</li>
+        <li><strong>Test multiple risk thresholds.</strong> The current threshold is 4; testing 3, 5, and 6 will show whether conclusions are stable.</li>
+        <li><strong>Model position effects.</strong> Use layer, X/Y/Z coordinates, hour, exposed surfaces, and trial to predict risk.</li>
+        <li><strong>Translate results into holding-time guidance.</strong> For example: which boxes/layers become risky by hour 12, 18, and 24.</li>
+      </ol>
+      <div class="verdict">The most valuable next deliverable is the observed-vs-simulated comparison, because it tells us how much trust to place in the Monte Carlo risk estimates.</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker muted">Appendix</div>
+    <h2>Generated files index</h2>
+    <div class="body">
+      <div class="appendix-grid">
+        <div>
+          <h3>New folder/clean_state_space_data.py</h3>
+          <p>Script that converts the state-space workbook into a normalized observed-data CSV.</p>
+        </div>
+        <div>
+          <h3>New folder/state_space_combined_clean.csv</h3>
+          <p>Clean observed dataset with one row per hour, box, and trial.</p>
+        </div>
+        <div>
+          <h3>New folder/analyze_state_space_summaries.py</h3>
+          <p>Script that creates observed-data summaries, plots, and image descriptions.</p>
+        </div>
+        <div>
+          <h3>New folder/state_space_summary_results/</h3>
+          <p>Observed layer summaries, box rankings, risk summaries, heat maps, plot descriptions, and summary text.</p>
+        </div>
+        <div>
+          <h3>New folder/clean_monte_carlo_data.py</h3>
+          <p>Script that combines all Monte Carlo layer workbooks into one clean simulation dataset.</p>
+        </div>
+        <div>
+          <h3>New folder/monte_carlo_combined_clean.csv</h3>
+          <p>Clean Monte Carlo dataset with 50,000 simulation rows.</p>
+        </div>
+        <div>
+          <h3>New folder/analyze_monte_carlo_summaries.py</h3>
+          <p>Script that creates Monte Carlo summaries, risk rankings, uncertainty plots, heat maps, and image descriptions.</p>
+        </div>
+        <div>
+          <h3>New folder/monte_carlo_summary_results/</h3>
+          <p>Monte Carlo summary CSVs, risk plots, heat maps, image descriptions, and summary text.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="progress" id="progress"></div>
+<div class="navbar">
+  <button id="prevBtn" title="Previous">&larr;</button>
+  <span class="count" id="count">1 / 20</span>
+  <button id="nextBtn" title="Next">&rarr;</button>
+  <button class="fs" id="fsBtn" title="Fullscreen">Fullscreen</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let idx = 0;
+  const countEl = document.getElementById('count');
+  const progressEl = document.getElementById('progress');
+
+  function show(i){
+    idx = Math.max(0, Math.min(total - 1, i));
+    slides.forEach((s, n) => s.classList.toggle('active', n === idx));
+    countEl.textContent = (idx + 1) + ' / ' + total;
+    progressEl.style.width = (((idx + 1) / total) * 100) + '%';
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => show(idx - 1));
+  document.getElementById('nextBtn').addEventListener('click', () => show(idx + 1));
+  document.getElementById('fsBtn').addEventListener('click', () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){ e.preventDefault(); show(idx + 1); }
+    if (['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){ e.preventDefault(); show(idx - 1); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(total - 1);
+  });
+
+  show(0);
+</script>
+
+</body>
+</html>

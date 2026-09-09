@@ -1,0 +1,9 @@
+monte_carlo_layer_3_hour24_risk_heatmap.png
+
+Data used: `monte_carlo_box_hour_summary.csv` filtered to Layer 3 and hour 24, merged with state-space box coordinates.
+
+What it shows: Layer 3 spatial risk pattern at hour 24.
+
+How to read it: compare marker darkness to locate the highest-probability risk positions within Layer 3.
+
+Main result: Layer 3 is the safest layer overall. `L3B13` is the main hotspot, while `L3B12` and `L3B14` are low-risk.

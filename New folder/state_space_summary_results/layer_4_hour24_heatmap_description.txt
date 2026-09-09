@@ -1,0 +1,9 @@
+layer_4_hour24_heatmap.png
+
+Data used: `box_hour_summary.csv`, filtered to Layer 4 and hour 24.
+
+What it shows: a top-down spatial heat map for Layer 4 at hour 24.
+
+How to read it: warmer/redder markers indicate higher final values. Compare the box labels to locate the riskiest positions within the bottom/top referenced Layer 4 plane, depending on pallet orientation.
+
+Main result: Layer 4 has a late but strong rise. `L4B18` is the highest Layer 4 hotspot, followed by `L4B20` and `L4B17`. `L4B19` is the lowest Layer 4 position.

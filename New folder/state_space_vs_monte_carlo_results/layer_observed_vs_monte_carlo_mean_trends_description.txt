@@ -1,0 +1,9 @@
+layer_observed_vs_monte_carlo_mean_trends.png
+
+Data used: `layer_hour_observed_vs_monte_carlo_summary.csv`, comparing observed and Monte Carlo mean values by layer and hour.
+
+What it shows: each layer has an observed trend line and a Monte Carlo trend line across the matched hours.
+
+How to read it: paired lines that overlap or run close together indicate good simulation alignment for that layer.
+
+Main result: Monte Carlo follows the same layer ordering and time progression as the observed data.

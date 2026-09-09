@@ -1,0 +1,9 @@
+layer_3_hour24_heatmap.png
+
+Data used: `box_hour_summary.csv`, filtered to Layer 3 and hour 24.
+
+What it shows: a top-down spatial heat map for Layer 3 at hour 24.
+
+How to read it: use marker color to compare final mean values across Layer 3 box positions.
+
+Main result: Layer 3 is the coolest/lowest-risk layer overall. `L3B13` is the main Layer 3 hotspot, while `L3B14` and `L3B12` are among the lowest-risk boxes.

@@ -1,0 +1,9 @@
+layer_observed_inside_monte_carlo_interval.png
+
+Data used: `layer_hour_observed_vs_monte_carlo_summary.csv`, using the percent of observed box means that fall inside each Monte Carlo 5th-95th percentile range.
+
+What it shows: how often the observed result is covered by the Monte Carlo uncertainty interval.
+
+How to read it: higher percentages mean the simulation uncertainty range contains the observed data more often.
+
+Main result: this is a coverage check. Low values would mean Monte Carlo uncertainty is too narrow or shifted; high values mean the simulation range is plausible.

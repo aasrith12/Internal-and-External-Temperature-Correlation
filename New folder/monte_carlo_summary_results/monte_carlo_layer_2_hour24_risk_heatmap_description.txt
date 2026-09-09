@@ -1,0 +1,9 @@
+monte_carlo_layer_2_hour24_risk_heatmap.png
+
+Data used: `monte_carlo_box_hour_summary.csv` filtered to Layer 2 and hour 24, merged with state-space box coordinates.
+
+What it shows: Layer 2 spatial risk pattern at hour 24.
+
+How to read it: darker red positions are more likely to exceed the risk threshold in simulation.
+
+Main result: `L2B6` is the main Layer 2 risk hotspot. Other Layer 2 boxes have moderate to low risk.

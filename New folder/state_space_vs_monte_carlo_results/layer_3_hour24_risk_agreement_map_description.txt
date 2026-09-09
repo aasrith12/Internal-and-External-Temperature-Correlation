@@ -1,0 +1,9 @@
+layer_3_hour24_risk_agreement_map.png
+
+Data used: `hour24_observed_vs_monte_carlo_ranking.csv`, filtered to Layer 3 at hour 24.
+
+What it shows: Layer 3 spatial agreement between observed and simulated risk.
+
+How to read it: red indicates both methods see risk; green indicates both are low.
+
+Main result: Layer 3 remains the safest layer, with fewer boxes risky in both views.

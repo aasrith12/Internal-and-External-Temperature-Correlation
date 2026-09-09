@@ -1,0 +1,9 @@
+observed_vs_monte_carlo_mean_scatter.png
+
+Data used: `observed_vs_monte_carlo_box_hour.csv`, using matched box-hour rows that exist in both observed state-space summaries and Monte Carlo summaries.
+
+What it shows: each point compares one box-hour observed mean against the Monte Carlo simulated mean. The dashed diagonal line means perfect agreement.
+
+How to read it: points near the diagonal mean Monte Carlo matches observed data closely. Points above the line mean Monte Carlo is higher than observed; points below mean Monte Carlo is lower.
+
+Main result: the points mostly track the diagonal, so the simulation is aligned with observed average behavior overall.

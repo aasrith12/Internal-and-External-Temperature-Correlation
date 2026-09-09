@@ -1,0 +1,9 @@
+hour24_box_ranking.png
+
+Data used: `box_summary_ranked.csv`, specifically each box's mean value at hour 24 across available trials.
+
+What it shows: a horizontal bar chart ranking all pallet boxes by their final hour-24 mean value. The vertical dashed line marks the risk threshold of 4. Bar colors indicate the box's layer.
+
+How to read it: boxes farther to the right have higher final values and are more concerning. Any bar crossing the dashed line is above the selected risk threshold at hour 24.
+
+Main result: the top Layer 1 boxes dominate the highest-risk end of the ranking, with `L1B3`, `L1B5`, `L1B4`, `L1B2`, and `L1B1` all above the threshold. `L4B18`, `L4B20`, and `L2B6` are also important high-risk positions.

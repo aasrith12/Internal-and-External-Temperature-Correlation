@@ -1,0 +1,9 @@
+layer_2_hour24_risk_agreement_map.png
+
+Data used: `hour24_observed_vs_monte_carlo_ranking.csv`, filtered to Layer 2 at hour 24.
+
+What it shows: Layer 2 spatial agreement between observed threshold status and Monte Carlo risk status.
+
+How to read it: red boxes are risky in both views; orange boxes are flagged by Monte Carlo but have observed means below threshold.
+
+Main result: L2B6 is the major Layer 2 agreement hotspot, while the remaining boxes are lower or mixed.

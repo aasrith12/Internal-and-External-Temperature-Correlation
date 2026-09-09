@@ -1,0 +1,9 @@
+monte_carlo_hour24_box_uncertainty.png
+
+Data used: `monte_carlo_hour24_box_risk_ranking.csv`, using mean simulated value plus 5th and 95th percentiles at hour 24.
+
+What it shows: each box's hour-24 simulated mean as a point, with an uncertainty interval from the 5th to 95th percentile. The dashed vertical line is the risk threshold of 4.
+
+How to read it: a point to the right of the threshold means the average simulation is risky. A long interval means more uncertainty. If most or all of the interval is right of the threshold, the risk is robust.
+
+Main result: Layer 1 boxes sit clearly beyond the threshold. Some Layer 4 boxes also have high means and wide intervals extending far into risky values.

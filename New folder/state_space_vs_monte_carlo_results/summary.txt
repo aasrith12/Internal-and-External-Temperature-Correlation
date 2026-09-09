@@ -1,0 +1,32 @@
+Observed state-space vs Monte Carlo comparison
+Risk threshold used: value >= 4
+
+Overall observed-vs-Monte Carlo mean correlation: 0.999
+Hour-24 observed-vs-Monte Carlo mean correlation: 0.999
+Observed means inside Monte Carlo 5th-95th interval: 100.0%
+Observed risky/not-risky agreement with Monte Carlo >=50% risk: 99.0%
+
+Layer ranking by largest mean absolute difference:
+- Layer 1: mean absolute difference=0.085, risk agreement=96.0%, inside interval=100.0%
+- Layer 3: mean absolute difference=0.039, risk agreement=100.0%, inside interval=100.0%
+- Layer 2: mean absolute difference=0.039, risk agreement=100.0%, inside interval=100.0%
+- Layer 4: mean absolute difference=0.026, risk agreement=100.0%, inside interval=100.0%
+
+Hour-24 boxes risky in both observed and Monte Carlo views:
+- L1B5: observed mean=7.58, Monte Carlo mean=7.57, risk=100.0%
+- L1B2: observed mean=7.32, Monte Carlo mean=7.31, risk=100.0%
+- L1B1: observed mean=7.25, Monte Carlo mean=7.26, risk=99.8%
+- L4B18: observed mean=6.88, Monte Carlo mean=6.81, risk=91.6%
+- L4B20: observed mean=5.78, Monte Carlo mean=5.77, risk=90.4%
+- L2B6: observed mean=5.70, Monte Carlo mean=5.76, risk=89.0%
+- L1B3: observed mean=7.58, Monte Carlo mean=7.63, risk=87.2%
+- L1B4: observed mean=7.40, Monte Carlo mean=7.26, risk=84.8%
+- L4B17: observed mean=5.58, Monte Carlo mean=5.62, risk=81.6%
+- L4B16: observed mean=4.62, Monte Carlo mean=4.62, risk=63.2%
+- L3B13: observed mean=4.54, Monte Carlo mean=4.44, risk=54.4%
+
+Hour-24 boxes Monte Carlo flags as risky but observed mean is below threshold:
+- None
+
+Hour-24 boxes observed as risky but Monte Carlo risk is below 50%:
+- None

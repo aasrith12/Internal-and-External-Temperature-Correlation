@@ -53,6 +53,7 @@
   }
 
   function setHour(hour) {
+    $("time-slider").value=hours.indexOf(hour);
     state.hour=hour;
     document.querySelectorAll('[data-hour]').forEach(button=>{const active=Number(button.dataset.hour)===hour;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
     $('time-caption').textContent=`Hour ${hour} of 24`;
@@ -86,6 +87,7 @@
     const above=Number(obs?.mean_value)>=threshold;
     $('box-narrative').textContent=`At hour ${state.hour}, the observed mean is ${above?'at or above':'below'} ${threshold}. ${fmt(risk,1)}% of simulated samples meet or exceed that threshold.`;
     renderChart(box);
+    renderComparison();
   }
 
   function renderChart(box) {
@@ -179,8 +181,37 @@
   $('explode-slider').addEventListener('input',event=>{state.explode=Number(event.target.value);$('explode-value').textContent=`${Math.round(state.explode/12*100)}%`;requestDraw();});
   document.querySelectorAll('[data-layer]').forEach(button=>button.addEventListener('click',()=>setLayer(button.dataset.layer)));
   document.querySelectorAll('[data-hour]').forEach(button=>button.addEventListener('click',()=>{stopPlayback();setHour(Number(button.dataset.hour));}));
-  function stopPlayback(){clearInterval(animation);animation=null;$('play-time').setAttribute('aria-pressed','false');$('play-time').setAttribute('aria-label','Play time sequence');$('play-time').innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 9 6-9 6Z"/></svg>';}
-  $('play-time').addEventListener('click',()=>{if(animation){stopPlayback();return;}if(state.hour===24)setHour(0);$('play-time').setAttribute('aria-pressed','true');$('play-time').setAttribute('aria-label','Pause time sequence');$('play-time').innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4h2v12H6ZM12 4h2v12h-2Z"/></svg>';animation=setInterval(()=>{const next=hours.indexOf(state.hour)+1;if(next>=hours.length){stopPlayback();return;}setHour(hours[next]);if(hours[next]===24)stopPlayback();},1400);});
+  function stopPlayback(){clearInterval(animation);animation=null;$('play-time').setAttribute('aria-pressed','false');$('play-time').setAttribute('aria-label','Play time sequence');$('play-time').textContent='Play';$('play-status').textContent=state.hour===24?'Finished / replay from hour 0':'Paused / 5 recorded time points';}
+  function startPlayback(){if(state.hour===24)setHour(0);$('play-time').setAttribute('aria-pressed','true');$('play-time').setAttribute('aria-label','Pause time sequence');$('play-time').textContent='Pause';$('play-status').textContent='Playing / recorded time points';animation=setInterval(()=>{const next=hours.indexOf(state.hour)+1;if(next>=hours.length){stopPlayback();return;}setHour(hours[next]);if(state.hour===24)stopPlayback();},Number($('play-speed').value));}
+  $('play-time').addEventListener('click',()=>animation?stopPlayback():startPlayback());
+  $('time-slider').addEventListener('input',event=>{stopPlayback();setHour(hours[Number(event.target.value)]);$('play-status').textContent='Paused / 5 recorded time points';});
+  $('play-speed').addEventListener('change',()=>{if(animation){stopPlayback();startPlayback();}});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stopPlayback();});
+  for(const id of ['compare-a','compare-b']){
+    $(id).innerHTML=boxes.map(b=>`<option value="${b.box_id}">${b.box_id} / Layer ${b.layer}</option>`).join('');
+    $(id).addEventListener('change',()=>{ensureDistinct(id);renderComparison();});
+  }
+  $('compare-a').value=initial.box_id;
+  $('compare-b').value=initial.box_id==='L3B12'?'L1B1':'L3B12';
+  function ensureDistinct(changed){const other=changed==='compare-a'?'compare-b':'compare-a';if($(changed).value===$(other).value)$(other).value=boxes.find(b=>b.box_id!==$(changed).value).box_id;for(const id of ['compare-a','compare-b'])for(const option of $(id).options)option.disabled=option.value===$(id==='compare-a'?'compare-b':'compare-a').value;}
+  $('use-selected').addEventListener('click',()=>{$('compare-a').value=state.selected;ensureDistinct('compare-a');renderComparison();});
+  function renderComparison(){
+    const pair=[$('compare-a').value,$('compare-b').value].map(id=>boxes.find(b=>b.box_id===id));
+    if(pair.some(b=>!b))return;
+    $('compare-hour').textContent=`Hour ${state.hour} / 24`;
+    $('compare-cards').innerHTML=pair.map((b,i)=>{const o=observation(b),s=simulation(b);return `<article class="compare-card"><h3>${i?'B':'A'} / ${b.box_id} <small> / Layer ${b.layer}</small></h3><dl>${[
+      ['Observed mean',fmt(o?.mean_value)],['Observed range',`${fmt(o?.min_value)} to ${fmt(o?.max_value)}`],['Simulated exceedance',`${fmt(s?.risk_percent,1)}%`],['Simulation interval',`${fmt(s?.p05_simulated_value)} to ${fmt(s?.p95_simulated_value)}`],['First observed trial &ge; 4',b.first_risk_hour==null?'Not reached by hour 24':`Hour ${b.first_risk_hour}`]
+    ].map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl></article>`;}).join('');
+    const w=900,h=250,m={l:45,r:25,t:25,b:35},values=[threshold,...pair.flatMap(b=>b.observed.map(r=>Number(r.mean_value)))],lo=Math.min(0,...values),hi=Math.max(...values)+.5;
+    const x=t=>m.l+t/24*(w-m.l-m.r),y=v=>h-m.b-(v-lo)/(hi-lo)*(h-m.t-m.b);
+    let svg='';for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4;svg+=`<line x1="${m.l}" x2="${w-m.r}" y1="${y(v)}" y2="${y(v)}" stroke="#e4eadd"/><text x="${m.l-8}" y="${y(v)+4}" text-anchor="end" font-size="12" fill="#687563">${fmt(v,1)}</text>`;}
+    svg+=`<line x1="${m.l}" x2="${w-m.r}" y1="${y(threshold)}" y2="${y(threshold)}" stroke="#aa8350" stroke-dasharray="4 5"/><text x="${w-m.r}" y="${y(threshold)-7}" text-anchor="end" font-size="11" fill="#906d40">Threshold ${threshold}</text><line x1="${x(state.hour)}" x2="${x(state.hour)}" y1="${m.t}" y2="${h-m.b}" stroke="#74816d" stroke-dasharray="3 4"/>`;
+    pair.forEach((b,i)=>{const c=i?'#8565ac':'#397766',rows=[...b.observed].sort((a,b)=>a.hour-b.hour);svg+=`<path d="${rows.map((r,j)=>`${j?'L':'M'}${x(Number(r.hour))},${y(Number(r.mean_value))}`).join(' ')}" fill="none" stroke="${c}" stroke-width="3" ${i?'stroke-dasharray="7 4"':''}/>`;const o=observation(b);if(o)svg+=`<circle cx="${x(state.hour)}" cy="${y(o.mean_value)}" r="5" fill="${c}" stroke="white" stroke-width="2"/>`;});
+    svg+=hours.map(t=>`<text x="${x(t)}" y="${h-10}" text-anchor="middle" font-size="12" fill="#687563">${t}h</text>`).join('');
+    $('compare-chart').innerHTML=`<svg viewBox="0 0 ${w} ${h}" style="stroke:none" role="img" aria-label="Observed mean trends for ${pair[0].box_id} and ${pair[1].box_id}. Selected hour ${state.hour}.">${svg}</svg>`;
+    const delta=Number(observation(pair[0])?.mean_value)-Number(observation(pair[1])?.mean_value);
+    $('compare-difference').textContent=`At hour ${state.hour}, A minus B = ${fmt(delta)} in observed mean (source units unconfirmed).`;
+  }
+  ensureDistinct('compare-a');
   directory();setHour(state.hour);new ResizeObserver(resize).observe(wrap);resize();
 })();

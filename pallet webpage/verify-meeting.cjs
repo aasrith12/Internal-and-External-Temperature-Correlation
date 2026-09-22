@@ -1,0 +1,27 @@
+const {chromium}=require(process.argv[2] || 'playwright-core');
+const {pathToFileURL}=require('node:url');
+const path=require('node:path');
+const assert=require('node:assert/strict');
+(async()=>{const browser=await chromium.launch({headless:true});try{
+const page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.goto(pathToFileURL(path.join(__dirname,'index.html')).href);
+assert.equal(await page.locator('#compare-a').inputValue(),'L1B1');
+assert.equal(await page.locator('#compare-b').inputValue(),'L3B12');
+await page.locator('#compare-b').selectOption('L4B18');
+await page.locator('[data-hour="6"]').click();
+assert.equal(await page.locator('#compare-hour').innerText(),'Hour 6 / 24');
+const expected=await page.evaluate(()=>window.PALLET_DATA.boxes.find(b=>b.box_id==='L4B18').observed.find(r=>r.hour===6).mean_value.toFixed(2));
+assert.ok((await page.locator('.compare-card').nth(1).innerText()).includes(expected));
+await page.locator('[data-box="L4B18"]').click();await page.locator('#use-selected').click();
+assert.equal(await page.locator('#compare-a').inputValue(),'L4B18');assert.notEqual(await page.locator('#compare-b').inputValue(),'L4B18');
+await page.locator('#time-slider').fill('2');assert.equal(await page.locator('#time-caption').innerText(),'Hour 12 of 24');
+await page.locator('#play-speed').selectOption('700');await page.locator('#play-time').click();
+await page.waitForTimeout(800);assert.equal(await page.locator('#compare-hour').innerText(),'Hour 18 / 24');
+await page.waitForTimeout(800);assert.equal(await page.locator('#play-time').getAttribute('aria-pressed'),'false');
+await page.locator('#play-time').click();assert.equal(await page.locator('#time-caption').innerText(),'Hour 0 of 24');
+await page.locator('#play-time').click();await page.waitForTimeout(800);assert.equal(await page.locator('#time-caption').innerText(),'Hour 0 of 24');
+await page.locator('#compare-a').selectOption('L1B1');await page.locator('#compare-b').selectOption('L3B12');await page.locator('[data-hour="24"]').click();
+await page.locator('.comparison').screenshot({path:path.join(__dirname,'comparison-demo.png')});
+await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+assert.deepEqual(errors,[]);console.log('PASS: box selection, distinct pair, source metrics, timeline sync, speed, auto-stop, replay, pause, mobile width, no page errors.');
+}finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});

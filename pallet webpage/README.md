@@ -7,7 +7,8 @@ Open `index.html` directly in a modern browser. The webpage runs offline; no ins
 - Drag the pallet to rotate through 360 degrees; scroll to zoom.
 - Click a box to see its report beside the visualization.
 - Separate layers or filter a layer to reach hidden boxes. Box buttons provide another way to select any position.
-- Change the selected hour to compare observed means and simulated threshold exceedance over time.
+- Change the selected hour to compare observed means and simulated threshold exceedance over time. Play/Pause advances through the five recorded simulation hours (0, 6, 12, 18, 24); use the timeline slider or select 0.5x, 1x, or 2x speed. Playback stops at hour 24 and pauses when the page is hidden.
+- Compare two distinct boxes below the explorer using Box A and Box B. The shared observed-trend chart and side-by-side metrics follow the selected hour. Use **Use inspected box as A** to compare the box selected in the pallet.
 - Reset the camera to restore the starting view.
 - Open **Data & alignment**, or use the report's **View this box’s data & alignment** link. The selected box and hour carry between pages. Inspect chart inputs, individual trials, all 500 saved simulations at an hour, top-down layouts, and downloadable source snapshots.
 
@@ -48,3 +49,5 @@ Then reload the page. The builder reads the workbooks and existing CSVs in `New 
 - `verify.cjs`: optional browser interaction checks; run with Node and an installed `playwright-core` module (or pass its absolute module path as the first argument).
 
 The visualization projects 3D box geometry onto a canvas and uses the displayed faces for selection. It has no external JavaScript, font, or network dependencies.
+
+Additional comparison and playback checks: `node "pallet webpage/verify-meeting.cjs"` (optionally pass a `playwright-core` module path).
